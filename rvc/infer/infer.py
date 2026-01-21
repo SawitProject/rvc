@@ -13,7 +13,7 @@ sys.path.append(os.getcwd())
 
 from rvc.lib.embedders import fairseq
 from rvc.lib.tools.cut import cut, restore
-from rvc.lib.infer.pipeline import Pipeline
+from rvc.infer.pipeline import Pipeline
 from rvc.utils import clear_gpu_cache
 from rvc.lib.algorithm.synthesizers import Synthesizer
 from rvc.utils import check_predictors, check_embedders, load_audio
