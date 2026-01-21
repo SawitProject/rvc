@@ -19,3 +19,7 @@ ffmpeg-python>=0.2.0
 tkinter-embed
 customtkinter
 matplotlib>=3.7.2
+gradio
+onnxruntime; sys_platform == 'darwin'
+onnxruntime-gpu; sys_platform != 'darwin'
+audio-separator[gpu]
