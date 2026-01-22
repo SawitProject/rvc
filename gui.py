@@ -12,9 +12,9 @@ from tkinter import filedialog
 
 sys.path.append(os.getcwd())
 
-from modules import opencl
-from modules.config import Config
-from modules.inference import run_inference_script
+from rvc.lib.backend import opencl
+from rvc.lib.config import Config
+from rvc.infer.infer import run_inference_script
 
 audio_load = ""
 
