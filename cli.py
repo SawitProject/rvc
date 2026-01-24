@@ -69,6 +69,7 @@ class VoiceConverter:
         proposal_pitch_threshold=255.0
     ):
         try:
+            check_predictors(f0_method)
             audio = load_audio(audio_input_path, self.sample_rate, formant_shifting=formant_shifting, formant_qfrency=formant_qfrency, formant_timbre=formant_timbre)
             audio_max = np.abs(audio).max() / 0.95
             if audio_max > 1: audio /= audio_max
