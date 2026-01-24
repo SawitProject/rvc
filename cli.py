@@ -17,7 +17,7 @@ from rvc.tools.cut import cut, restore
 from rvc.infer.pipeline import Pipeline
 from rvc.utils import clear_gpu_cache, check_predictors, check_embedders, load_audio
 from rvc.lib.algorithm.synthesizers import Synthesizer
-
+from rvc.lib.config import *
 # Configure logging to silence noisy libraries
 for l in ["torch", "faiss", "omegaconf", "httpx", "httpcore", "faiss.loader", "numba.core", "urllib3", "transformers", "matplotlib"]:
     logging.getLogger(l).setLevel(logging.ERROR)
