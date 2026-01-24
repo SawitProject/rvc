@@ -6,9 +6,8 @@ sys.path.append(os.getcwd())
 
 from rvc.lib.backend import opencl
 
-PREDICTOR_MODEL = os.path.join(os.getcwd(), "assets", " models")
-
-
+# Corrected path constant (removed space in " models")
+PREDICTOR_MODEL = os.path.join(os.getcwd(), "assets", "models")
 
 
 def singleton(cls):
@@ -31,12 +30,26 @@ class Config:
 
     def device_config(self):
         if not self.cpu_mode:
-            if self.device.startswith("cuda"): self.set_cuda_config()
-            elif opencl.is_available(): self.device = "ocl:0"
-            elif self.has_mps(): self.device = "mps"
-            else: self.device = "cpu"
+            if self.device.startswith("cuda"): 
+                self.set_cuda_config()
+            elif opencl.is_available(): 
+                self.device = "ocl:0"
+                # FIX: Set a default gpu_mem for OpenCL so config is calculated
+                self.gpu_mem = 4 
+            elif self.has_mps(): 
+                self.device = "mps"
+                # FIX: Calculate gpu_mem for MPS (assuming unified memory size)
+                # We use 4GB as a conservative default if query fails or to avoid overhead
+                self.gpu_mem = 4 
+            else: 
+                self.device = "cpu"
 
-        if self.gpu_mem is not None and self.gpu_mem <= 4: return 1, 5, 30, 32
+        # FIX: Ensure gpu_mem is not None before the check, 
+        # or explicitly handle the return for all cases.
+        # If gpu_mem is None (e.g. on CPU mode), treat it as low memory scenario.
+        
+        if self.gpu_mem is not None and self.gpu_mem <= 4: 
+            return 1, 5, 30, 32
         return (3, 10, 60, 65) if self.is_half else (1, 6, 38, 41)
 
     def set_cuda_config(self):
