@@ -163,7 +163,10 @@ class VoiceConverter:
             self.hubert_model = self.net_g = self.n_spk = self.vc = self.tgt_sr = None
             clear_gpu_cache()
 
-        del self.net_g, self.cpt
+        if hasattr(self, 'net_g'):
+            del self.net_g
+        if hasattr(self, 'cpt'):
+            del self.cpt
         clear_gpu_cache()
         self.cpt = None
 
