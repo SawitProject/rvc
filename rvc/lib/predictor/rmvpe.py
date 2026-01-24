@@ -10,7 +10,6 @@ from librosa.filters import mel
 
 sys.path.append(os.getcwd())
 
-from modules import opencl
 
 N_MELS, N_CLASS = 128, 360
 
