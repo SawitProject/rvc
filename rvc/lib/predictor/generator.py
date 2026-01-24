@@ -52,6 +52,8 @@ class Generator:
 
     def calculator(self, f0_method, x, f0_up_key = 0, p_len = None, filter_radius = 3, f0_autotune = False, f0_autotune_strength = 1, proposal_pitch = False, proposal_pitch_threshold = 255.0):
         if p_len is None: p_len = x.shape[0] // self.window
+        if "hybrid" in f0_method: logger.debug("using hybrid method".format(f0_method=f0_method))
+
         f0 = self.compute_f0(f0_method, x, p_len, filter_radius if filter_radius % 2 != 0 else filter_radius + 1)
 
         if isinstance(f0, tuple): f0 = f0[0]
@@ -253,7 +255,50 @@ class Generator:
             ), 
             p_len
         )
-    
+
+    def get_f0_hybrid(self, methods_str, x, p_len, filter_radius):
+        methods_str = re.search(r"hybrid\[(.+)\]", methods_str)
+        if methods_str: 
+            methods = [
+                method.strip() 
+                for method in methods_str.group(1).split("+")
+            ]
+
+        n = len(methods)
+        f0_stack = []
+
+        for method in methods:
+            f0_stack.append(
+                self._resize_f0(
+                    self.compute_f0(
+                        method, 
+                        x, 
+                        p_len, 
+                        filter_radius
+                    ),
+                    p_len
+                )
+            )
+        
+        f0_mix = np.zeros(p_len)
+
+        if not f0_stack: return f0_mix
+        if len(f0_stack) == 1: return f0_stack[0]
+
+        weights = (1 - np.abs(np.arange(n) / (n - 1) - (1 - self.alpha))) ** 2
+        weights /= weights.sum()
+
+        stacked = np.vstack(f0_stack)
+        voiced_mask = np.any(stacked > 0, axis=0)
+
+        f0_mix[voiced_mask] = np.exp(
+            np.nansum(
+                np.log(stacked + 1e-6) * weights[:, None], axis=0
+            )[voiced_mask]
+        )
+
+        return f0_mix
+        
     def get_f0_yin(self, x, p_len, mode="yin"):
         self.if_yin = mode == "yin"
         self.yin = yin if self.if_yin else pyin
@@ -268,3 +313,5 @@ class Generator:
 
         if not self.if_yin: f0 = f0[0]
         return self._resize_f0(f0, p_len)
+
+    
