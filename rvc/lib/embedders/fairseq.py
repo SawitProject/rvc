@@ -27,7 +27,7 @@ sys.modules["fairseq.data"] = fairseq_data
 sys.modules["fairseq.data.dictionary"] = fairseq_data_dictionary
 
 def load_model(filename):
-    state = torch.load(filename, map_location="cpu")
+    state = torch.load(filename, map_location="cpu", weights_only=True)
     model = HubertModel(HubertConfig(**state['cfg']['model']))
     model.load_state_dict(state['model'], strict=False)
     return model
