@@ -12,12 +12,14 @@ warnings.filterwarnings("ignore")
 sys.path.append(os.getcwd())
 
 from rvc.lib.embedders import fairseq
-from rvc.lib.tools.cut import cut, restore
+from rvc.tools.cut import cut, restore
 from rvc.infer.pipeline import Pipeline
-from rvc.utils import clear_gpu_cache
+from rvc.utils import clear_gpu_cache, check_predictors, check_embedders, load_audio
 from rvc.lib.algorithm.synthesizers import Synthesizer
-from rvc.utils import check_predictors, check_embedders, load_audio
+# IMPORT FIX: Ensure this imports the singleton class we just fixed
+from rvc.lib.config import Config 
 
+# Configure logging to silence noisy libraries
 for l in ["torch", "faiss", "omegaconf", "httpx", "httpcore", "faiss.loader", "numba.core", "urllib3", "transformers", "matplotlib"]:
     logging.getLogger(l).setLevel(logging.ERROR)
 
@@ -186,6 +188,7 @@ class VoiceConverter:
             if audio_max > 1: audio /= audio_max
 
             if not self.hubert_model:
+                # NOTE: Kept local path structure for infer.py ("models") vs cli ("assets/models")
                 embedder_model_path = os.path.join("models", embedder_model + ".pt")
                 if not os.path.exists(embedder_model_path): raise FileNotFoundError(f"[ERROR] Not found embeddeder: {embedder_model}")
 
