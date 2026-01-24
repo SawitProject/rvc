@@ -12,22 +12,37 @@ import torch.nn.functional as F
 from torch import nn
 from omegaconf import DictConfig, open_dict
 
+# --- FIX START: Define Dictionary and Mock Modules BEFORE load_model ---
+
 class Dictionary:
     def __init__(self, *args, **kwargs):
         pass
 
+# Create the mock modules
 fairseq = types.ModuleType("fairseq")
 fairseq_data = types.ModuleType("fairseq.data")
 fairseq_data_dictionary = types.ModuleType("fairseq.data.dictionary")
+
+# IMPORTANT: Point the Dictionary attribute to the CLASS defined above, 
+# not fairseq_data_dictionary.Dictionary which creates a circular reference or error.
 fairseq_data_dictionary.Dictionary = Dictionary
+
 fairseq.data = fairseq_data
 fairseq_data.dictionary = fairseq_data_dictionary
+
+# Register them in sys.modules so torch.load can find them during unpickling
 sys.modules["fairseq"] = fairseq
 sys.modules["fairseq.data"] = fairseq_data
 sys.modules["fairseq.data.dictionary"] = fairseq_data_dictionary
 
+# --- FIX END ---
+
 def load_model(filename):
-    state = torch.load(filename, map_location="cpu", weights_only=True)
+    # FIX: Use safe_globals to allow the custom Dictionary class
+    # This is required when weights_only=True (default in PyTorch 2.6+)
+    with torch.serialization.safe_globals([Dictionary]):
+        state = torch.load(filename, map_location="cpu", weights_only=True)
+    
     model = HubertModel(HubertConfig(**state['cfg']['model']))
     model.load_state_dict(state['model'], strict=False)
     return model
@@ -69,8 +84,8 @@ def quant_noise(module, p, block_size):
                 mask = mask.repeat_interleave(block_size, -1).view(-1, in_features)
             else:
                 weight = mod.weight
-                in_channels = mod.in_channels
-                out_channels = mod.out_channels
+                in_channels = module.in_channels
+                out_channels = module.out_channels
 
                 if mod.kernel_size == (1, 1):
                     mask = torch.zeros(int(in_channels // block_size * out_channels), device=weight.device)
