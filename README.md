@@ -10,6 +10,10 @@
 
 **requires Python 3.10.x or 3.11.x and FFmpeg installed**
 
+```
+git clone https://github.com/SawitProject/Simple-RVC.git
+```
+
 NVIDIA:
 ```
 python -m pip install torch torchaudio torchvision --index-url https://download.pytorch.org/whl/cu118
