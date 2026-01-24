@@ -13,7 +13,7 @@ sys.path.append(os.getcwd())
 from rvc.lib.predictor.generator import Generator
 from rvc.lib.backend.rms import RMSEnergyExtractor
 from rvc.utils import change_rms, clear_gpu_cache
-
+from rvc.lib.config import *
 bh, ah = signal.butter(N=5, Wn=48, btype="high", fs=16000)
 
 class Pipeline:
