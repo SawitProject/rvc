@@ -4,11 +4,11 @@ import torch
 
 sys.path.append(os.getcwd())
 
-from rvc.lib.algorithm.hifigan import HiFiGANGenerator
-from rvc.lib.algorithm.refinegan import RefineGANGenerator
+from rvc.lib.generators.hifigan import HiFiGANGenerator
+from rvc.lib.generators.refinegan import RefineGANGenerator
 from rvc.lib.algorithm.residuals import ResidualCouplingBlock
-from rvc.lib.algorithm.mrf_hifigan import HiFiGANMRFGenerator
-from rvc.lib.algorithm.nsf_hifigan import HiFiGANNRFGenerator
+from rvc.lib.generators.mrf_hifigan import HiFiGANMRFGenerator
+from rvc.lib.generators.nsf_hifigan import HiFiGANNRFGenerator
 from rvc.lib.algorithm.encoders import TextEncoder, PosteriorEncoder
 from rvc.lib.algorithm.commons import slice_segments, rand_slice_segments
 
