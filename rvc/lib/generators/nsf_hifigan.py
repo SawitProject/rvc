@@ -11,8 +11,8 @@ from torch.nn.utils.parametrizations import weight_norm
 
 sys.path.append(os.getcwd())
 
-from modules.commons import init_weights
-from modules.residuals import ResBlock, LRELU_SLOPE
+from rvc.lib.algorithm.commons import init_weights
+from rvc.lib.algorithm.residuals import ResBlock, LRELU_SLOPE
 
 class SineGen(torch.nn.Module):
     def __init__(self, samp_rate, harmonic_num=0, sine_amp=0.1, noise_std=0.003, voiced_threshold=0, flag_for_pulse=False):
