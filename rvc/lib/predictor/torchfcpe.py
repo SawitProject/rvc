@@ -16,8 +16,7 @@ from torch.nn.utils.parametrizations import weight_norm
 
 sys.path.append(os.getcwd())
 
-from modules import opencl
-
+from rvc.lib.backend import opencl
 os.environ["LRU_CACHE_CAPACITY"] = "3"
 
 def spawn_wav2mel(args, device = None):
