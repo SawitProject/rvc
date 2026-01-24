@@ -42,7 +42,7 @@ def HF_download_file(url, output_path=None):
 def check_predictors(method):
     def download(predictors):
         if not os.path.exists(PREDICTOR_MODEL): 
-           HF_download_file("https://huggingface.co/NeoPy/Ultimate-Models/resolve/main/predictors" + predictors, PREDICTOR_MODEL)
+           HF_download_file("https://huggingface.co/NeoPy/Ultimate-Models/resolve/main/predictors/" + predictors, PREDICTOR_MODEL)
 
     model_dict = {
         **dict.fromkeys(["rmvpe", "rmvpe-legacy"], "rmvpe.pt"), 
@@ -62,7 +62,7 @@ def check_embedders(hubert):
         hubert += ".pt"
         HUBERT_PATH = os.path.join(os.getcwd(), "assets", " models", hubert)
         if not os.path.exists(model_path): 
-            HF_download_file("".join("https://huggingface.co/NeoPy/Ultimate-Models/resolve/main/embedders", "fairseq/", hubert), HUBERT_PATH)
+            HF_download_file("".join("https://huggingface.co/NeoPy/Ultimate-Models/resolve/main/embedders/", "fairseq/", hubert), HUBERT_PATH)
 
 def load_audio(file, sample_rate=16000, formant_shifting=False, formant_qfrency=0.8, formant_timbre=0.8):
     try:
