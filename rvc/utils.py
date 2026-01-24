@@ -13,7 +13,7 @@ from tqdm import tqdm  # Imported for progress bar
 sys.path.append(os.getcwd())
 
 from rvc.lib.backend import opencl
-PREDICTOR_MODEL = os.path.join(os.getcwd(), "assets", "models")
+
 
 
 def change_rms(source_audio, source_rate, target_audio, target_rate, rate):
@@ -57,12 +57,11 @@ def HF_download_file(url, output_path=None):
 
 def check_predictors(method):
     def download(predictors):
-        if not os.path.exists(PREDICTOR_MODEL): 
+        PREDICTOR_MODEL = os.path.join(os.getcwd(), "assets", "models", predictors)
+        if not os.path.exists(os.path.join(PREDICTOR_MODEL): 
            # Ensure directory exists
            predictor_dir = os.path.dirname(PREDICTOR_MODEL)
-           if predictor_dir and not os.path.exists(predictor_dir):
-               os.makedirs(predictor_dir, exist_ok=True)
-               
+           
            HF_download_file(os.path.join("https://huggingface.co/NeoPy/Ultimate-Models/resolve/main/predictors/", predictors), PREDICTOR_MODEL)
 
     model_dict = {
