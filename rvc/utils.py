@@ -58,9 +58,11 @@ def HF_download_file(url, output_path=None):
 def check_predictors(method):
     def download(predictors):
         PREDICTOR_MODEL = os.path.join(os.getcwd(), "assets", "models", predictors)
-        if not os.path.exists(os.path.join(PREDICTOR_MODEL): 
+        if not os.path.exists(PREDICTOR_MODEL):
            # Ensure directory exists
            predictor_dir = os.path.dirname(PREDICTOR_MODEL)
+           if predictor_dir and not os.path.exists(predictor_dir):
+               os.makedirs(predictor_dir, exist_ok=True)
            
            HF_download_file(os.path.join("https://huggingface.co/NeoPy/Ultimate-Models/resolve/main/predictors/", predictors), PREDICTOR_MODEL)
 
@@ -83,6 +85,10 @@ def check_embedders(hubert):
         # FIXED: Removed the leading space in " models" -> "models"
         HUBERT_PATH = os.path.join(os.getcwd(), "assets", "models", hubert)
         if not os.path.exists(HUBERT_PATH): 
+            # Ensure directory exists
+            hubert_dir = os.path.dirname(HUBERT_PATH)
+            if hubert_dir and not os.path.exists(hubert_dir):
+                os.makedirs(hubert_dir, exist_ok=True)
             HF_download_file(os.path.join("https://huggingface.co/NeoPy/Ultimate-Models/resolve/main/embedders/fairseq/", hubert), HUBERT_PATH)
 
 def load_audio(file, sample_rate=16000, formant_shifting=False, formant_qfrency=0.8, formant_timbre=0.8):
