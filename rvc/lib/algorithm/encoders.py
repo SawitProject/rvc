@@ -5,7 +5,7 @@ import torch
 
 sys.path.append(os.getcwd())
 
-from rvc.lib.algorithm.rvc.lib.algorithm import WaveNet
+from rvc.lib.algorithm.modules import WaveNet
 from rvc.lib.algorithm.commons import sequence_mask
 from rvc.lib.algorithm.normalization import LayerNorm
 from rvc.lib.algorithm.attentions import MultiHeadAttention, FFN
