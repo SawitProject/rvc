@@ -140,13 +140,31 @@ class Pipeline:
         audio_pad = np.pad(audio, (self.window // 2, self.window // 2), mode="reflect")
 
         if audio_pad.shape[0] > self.t_max:
-            audio_sum = np.zeros_like(audio)
-
-            for i in range(self.window):
-                audio_sum += audio_pad[i : i + self.window]
-
+            # Use cumulative sum for efficient windowed sum computation
+            audio_abs = np.abs(audio_pad)
+            audio_cumsum = np.concatenate([[0], np.cumsum(audio_abs)])
+            
+            # Compute windowed sum efficiently using cumulative sum
+            # Window covers indices [i, i+window)
+            audio_window_sum = audio_cumsum[self.window:] - audio_cumsum[:-self.window]
+            
+            # For each position t, we want the sum of audio in the window around t
+            # Create an array where each position has its window sum
+            # Extend audio_window_sum to match audio length by padding
+            pad_size = self.t_query
+            audio_window_sum_padded = np.concatenate([
+                audio_window_sum[:pad_size][::-1],  # Mirror left side
+                audio_window_sum,
+                audio_window_sum[-pad_size:][::-1]   # Mirror right side
+            ])
+            
             for t in range(self.t_center, audio.shape[0], self.t_center):
-                opt_ts.append(t - self.t_query + np.where(np.abs(audio_sum[t - self.t_query : t + self.t_query]) == np.abs(audio_sum[t - self.t_query : t + self.t_query]).min())[0][0])
+                query_start = t
+                query_end = t + 2 * self.t_query
+                window_sums = audio_window_sum_padded[query_start:query_end]
+                if len(window_sums) > 0:
+                    min_idx = np.argmin(np.abs(window_sums))
+                    opt_ts.append(t + min_idx)
 
         s = 0
         t = None
