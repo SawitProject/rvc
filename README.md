@@ -2,8 +2,15 @@
 
 # Simple RVC
 
+A simple, high-quality voice conversion tool focused on simplicity and ease of use.
+
+
 </div>
 
+
+# Key Feature
+
+* Pitch extraction methods like: pm, dio, crepe, fcpe, rmvpe, harvest, yin, pyin and more!
 
 
 ## INSTALL
@@ -75,6 +82,18 @@ assets/models
 
 - I am not liable for any direct or indirect damages arising from the use of this project.
 
+# Planed Feature
+
+* Music Separation (Full Model)
+
+
+* Converting the RVC model to the ONNX model
+
+* Embedded extraction supports models for: onnx (.onnx), transformers (.bin - .json), spin (.bin - .json), whisper (.pt).
+
+* Gradio GUI
+
+  
 ## Project-based construction
 
 
