@@ -207,7 +207,7 @@ class Separator:
         """
         This method sets up the PyTorch and/or ONNX Runtime inferencing device, using GPU hardware acceleration if available.
         """
-        system_info = self.get_system_info()
+
         self.check_ffmpeg_installed()
         self.log_onnxruntime_packages()
         self.setup_torch_device(system_info)
