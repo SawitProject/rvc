@@ -5,6 +5,7 @@ import torch
 import codecs
 import librosa
 import requests
+import logger
 import numpy as np
 import soundfile as sf
 import torch.nn.functional as F
@@ -14,6 +15,14 @@ sys.path.append(os.getcwd())
 
 from rvc.lib.backend import opencl
 
+logger = logging.getLogger(__name__)
+    log_handler = logging.StreamHandler()
+    log_formatter = logging.Formatter(
+        fmt="%(asctime)s.%(msecs)03d - %(levelname)s - %(module)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S"
+    )
+    log_handler.setFormatter(log_formatter)
+    logger.addHandler(log_handler)
 
 
 def change_rms(source_audio, source_rate, target_audio, target_rate, rate):
