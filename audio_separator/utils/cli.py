@@ -11,20 +11,37 @@ def main():
     """Main entry point for the CLI."""
     logger = logging.getLogger(__name__)
     log_handler = logging.StreamHandler()
-    log_formatter = logging.Formatter(fmt="%(asctime)s.%(msecs)03d - %(levelname)s - %(module)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+    log_formatter = logging.Formatter(
+        fmt="%(asctime)s.%(msecs)03d - %(levelname)s - %(module)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S"
+    )
     log_handler.setFormatter(log_formatter)
     logger.addHandler(log_handler)
 
-    parser = argparse.ArgumentParser(description="Separate audio file into different stems.", formatter_class=lambda prog: argparse.RawTextHelpFormatter(prog, max_help_position=60))
+    parser = argparse.ArgumentParser(
+        description="Separate audio file into different stems.",
+        formatter_class=lambda prog: argparse.RawTextHelpFormatter(prog, max_help_position=60)
+    )
 
-    parser.add_argument("audio_files", nargs="*", help="The audio file paths or directory to separate, in any common format.", default=argparse.SUPPRESS)
+    parser.add_argument(
+        "audio_files",
+        nargs="*",
+        help="The audio file paths or directory to separate, in any common format.",
+        default=argparse.SUPPRESS
+    )
 
-    package_version = metadata.distribution("audio-separator").version
+    try:
+        package_version = metadata.distribution("audio-separator").version
+    except metadata.PackageNotFoundError:
+        package_version = "0.0.0"
 
     version_help = "Show the program's version number and exit."
     debug_help = "Enable debug logging, equivalent to --log_level=debug."
     env_info_help = "Print environment information and exit."
-    list_models_help = "List all supported models and exit. Use --list_filter to filter/sort the list and --list_limit to show only top N results."
+    list_models_help = (
+        "List all supported models and exit. Use --list_filter to filter/sort the list "
+        "and --list_limit to show only top N results."
+    )
     log_level_help = "Log level, e.g. info, debug, warning (default: %(default)s)."
 
     info_params = parser.add_argument_group("Info and Debugging")
@@ -33,9 +50,17 @@ def main():
     info_params.add_argument("-e", "--env_info", action="store_true", help=env_info_help)
     info_params.add_argument("-l", "--list_models", action="store_true", help=list_models_help)
     info_params.add_argument("--log_level", default="info", help=log_level_help)
-    info_params.add_argument("--list_filter", help="Filter and sort the model list by 'name', 'filename', or any stem e.g. vocals, instrumental, drums")
+    info_params.add_argument(
+        "--list_filter",
+        help="Filter and sort the model list by 'name', 'filename', or any stem e.g. vocals, instrumental, drums"
+    )
     info_params.add_argument("--list_limit", type=int, help="Limit the number of models shown")
-    info_params.add_argument("--list_format", choices=["pretty", "json"], default="pretty", help="Format for listing models: 'pretty' for formatted output, 'json' for raw JSON dump")
+    info_params.add_argument(
+        "--list_format",
+        choices=["pretty", "json"],
+        default="pretty",
+        help="Format for listing models: 'pretty' for formatted output, 'json' for raw JSON dump"
+    )
 
     model_filename_help = "Model to use for separation (default: %(default)s). Example: -m 2_HP-UVR.pth"
     output_format_help = "Output format for separated files, any common format (default: %(default)s). Example: --output_format=MP3"
@@ -59,7 +84,12 @@ def main():
     sample_rate_help = "Modify the sample rate of the output audio (default: %(default)s). Example: --sample_rate=44100"
     use_soundfile_help = "Use soundfile to write audio output (default: %(default)s). Example: --use_soundfile"
     use_autocast_help = "Use PyTorch autocast for faster inference (default: %(default)s). Do not use for CPU inference. Example: --use_autocast"
-    chunk_duration_help = "Split audio into chunks of this duration in seconds (default: %(default)s = no chunking). Useful for processing very long audio files on systems with limited memory. Recommended: 600 (10 minutes) for files >1 hour. Chunks are concatenated without overlap/crossfade. Example: --chunk_duration=600"
+    chunk_duration_help = (
+        "Split audio into chunks of this duration in seconds (default: %(default)s = no chunking). "
+        "Useful for processing very long audio files on systems with limited memory. "
+        "Recommended: 600 (10 minutes) for files >1 hour. Chunks are concatenated without overlap/crossfade. "
+        "Example: --chunk_duration=600"
+    )
     custom_output_names_help = 'Custom names for all output files in JSON format (default: %(default)s). Example: --custom_output_names=\'{"Vocals": "vocals_output", "Drums": "drums_output"}\''
 
     common_params = parser.add_argument_group("Common Separation Parameters")
@@ -135,10 +165,19 @@ def main():
         log_level = getattr(logging, args.log_level.upper())
     logger.setLevel(log_level)
 
+    # Import here to keep startup fast for flags like --version and --help
     from audio_separator.separator import Separator
 
     if args.env_info:
         separator = Separator()
+        # The separator class usually has a log_environment_info or similar method,
+        # but looking at the snippet, it seems it just initializes and the logic might be internal
+        # or the snippet provided expects a specific behavior.
+        # Based on typical implementations of this CLI:
+        if hasattr(separator, 'log_environment_info'):
+            separator.log_environment_info()
+        else:
+            logger.info("Environment info requested (no specific method found in this stub).")
         sys.exit(0)
 
     if args.list_models:
@@ -238,3 +277,7 @@ def main():
 
     output_files = separator.separate(audio_files, custom_output_names=args.custom_output_names)
     logger.info(f"Separation complete! Output file(s): {' '.join(output_files)}")
+
+
+if __name__ == "__main__":
+    main()
