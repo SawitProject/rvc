@@ -10,7 +10,7 @@ A simple, high-quality voice conversion tool focused on simplicity and ease of u
 
 # Key Feature
 
-* Pitch extraction methods like: pm, dio, crepe, fcpe, rmvpe, harvest, yin, pyin and more!
+* Pitch extraction methods 20+ like: pm, dio, crepe, fcpe, rmvpe, harvest, yin, pyin and more!
 
 
 ## INSTALL
@@ -84,7 +84,7 @@ assets/models
 
 # Planed Feature
 
-* Music Separation (Full Model)
+* Music Separation (Full Model) [ x ]
 
 
 * Converting the RVC model to the ONNX model
