@@ -15,6 +15,7 @@ sys.path.append(os.getcwd())
 from rvc.lib.predictor.rmvpe import RMVPE
 from rvc.utils import Autotune
 from rvc.lib.predictor.torchfcpe import FCPE
+from rvc.lib.predictor.djcm import DJCM
 from rvc.lib.predictor.pyworld import PYWORLD
 from rvc.lib.predictor.swipe import swipe, stonemask
 from rvc.lib.predictor.torchcrepe import CREPE, mean, median
@@ -98,7 +99,8 @@ class Generator:
             "crepe-medium": lambda: self.get_f0_crepe(x, p_len, "medium"), 
             "crepe-large": lambda: self.get_f0_crepe(x, p_len, "large"), 
             "crepe-full": lambda: self.get_f0_crepe(x, p_len, "full"), 
-            "fcpe": lambda: self.get_f0_fcpe(x, p_len), 
+            "fcpe": lambda: self.get_f0_fcpe(x, p_len),
+            "djcm": lambda: self.get_f0_djcm(x, p_len, filter_radius=filter_radius),
             "fcpe-legacy": lambda: self.get_f0_fcpe(x, p_len, legacy=True), 
             "rmvpe": lambda: self.get_f0_rmvpe(x, p_len), 
             "rmvpe-legacy": lambda: self.get_f0_rmvpe(x, p_len, legacy=True), 
@@ -174,6 +176,37 @@ class Generator:
         f0[pd < 0.1] = 0
 
         return self._resize_f0(f0[0].cpu().numpy(), p_len)
+
+    def get_f0_djcm(self, x, p_len):
+
+            self.djcm = DJCM(
+                os.path.join(
+                    PREDICTOR_MODEL, 
+                    "djcm.pt"
+                ), 
+                is_half=self.is_half, 
+                device=self.device, 
+
+            )
+
+        filter_radius /= 10
+
+        f0 = (
+            self.djcm.infer_from_audio_with_pitch(
+                x, 
+                thred=filter_radius, 
+                f0_min=self.f0_min, 
+                f0_max=self.f0_max
+            )
+        ) if clipping else (
+            self.djcm.infer_from_audio(
+                x, 
+                thred=filter_radius
+            )
+        )
+        
+        if self.predictor_onnx and self.delete_predictor_onnx: del self.djcm.model, self.djcm
+        return self._resize_f0(f0, p_len)
     
     def get_f0_fcpe(self, x, p_len, legacy=False):
         if not hasattr(self, "fcpe"): 
