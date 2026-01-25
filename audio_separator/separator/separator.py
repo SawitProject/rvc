@@ -212,26 +212,7 @@ class Separator:
         self.log_onnxruntime_packages()
         self.setup_torch_device(system_info)
 
-        def get_system_info(self):
-            """
-            This method logs the system information, including the operating system, CPU architecture and Python version
-            """
-            os_name = platform.system()
-            # Handle cases where platform.version() might return None on specific systems
-            os_version = platform.version() if platform.version() is not None else "Unknown"
-            self.logger.info(f"Operating System: {os_name} {os_version}")
-            
-            system_info = platform.uname()
-            self.logger.info(f"System: {system_info.system} Node: {system_info.node} Release: {system_info.release} Machine: {system_info.machine} Proc: {system_info.processor}")
-            
-            python_version = platform.python_version()
-            self.logger.info(f"Python Version: {python_version}")
-            
-            pytorch_version = torch.__version__
-            
-            self.logger.info(f"PyTorch Version: {pytorch_version}")
-            
-            return system_info
+        
     def check_ffmpeg_installed(self):
         """
         This method checks if ffmpeg is installed and logs its version.
