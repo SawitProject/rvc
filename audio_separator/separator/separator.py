@@ -210,6 +210,10 @@ class Separator:
 
         self.check_ffmpeg_installed()
         self.log_onnxruntime_packages()
+        
+        # Collect system information needed for device setup
+        system_info = platform.uname()
+        
         self.setup_torch_device(system_info)
 
         
@@ -237,13 +241,13 @@ class Separator:
         onnxruntime_cpu_package = self.get_package_distribution("onnxruntime")
         onnxruntime_dml_package = self.get_package_distribution("onnxruntime-directml")
 
-        if onnxruntime_gpu_package is not None:
+        if onnxruntime_gpu_package:
             self.logger.info(f"ONNX Runtime GPU package installed with version: {onnxruntime_gpu_package.version}")
-        if onnxruntime_silicon_package is not None:
+        if onnxruntime_silicon_package:
             self.logger.info(f"ONNX Runtime Silicon package installed with version: {onnxruntime_silicon_package.version}")
-        if onnxruntime_cpu_package is not None:
+        if onnxruntime_cpu_package:
             self.logger.info(f"ONNX Runtime CPU package installed with version: {onnxruntime_cpu_package.version}")
-        if onnxruntime_dml_package is not None:
+        if onnxruntime_dml_package:
             self.logger.info(f"ONNX Runtime DirectML package installed with version: {onnxruntime_dml_package.version}")
 
     def setup_torch_device(self, system_info):
