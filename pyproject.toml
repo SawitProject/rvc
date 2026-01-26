@@ -105,7 +105,7 @@ dev = [
 ]
 
 [project.scripts]
-rvc = "rvc:launch_cli"
+rvc = "rvc:main"
 
 [project.urls]
 Homepage = "https://github.com/SawitProject/rvc"
