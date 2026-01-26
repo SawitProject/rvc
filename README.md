@@ -18,7 +18,7 @@ A simple, high-quality voice conversion tool focused on simplicity and ease of u
 **requires Python 3.10.x or 3.11.x and FFmpeg installed**
 
 ```
-git clone https://github.com/SawitProject/Simple-RVC.git
+git clone https://github.com/SawitProject/rvc.git
 ```
 
 NVIDIA:
@@ -83,8 +83,6 @@ assets/models
 - I am not liable for any direct or indirect damages arising from the use of this project.
 
 # Planed Feature
-
-* Music Separation (Full Model) [x]
 
 
 * Converting the RVC model to the ONNX model
