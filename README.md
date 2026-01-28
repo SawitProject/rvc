@@ -11,7 +11,6 @@ A simple, high-quality voice conversion tool focused on simplicity and ease of u
 # Key Feature
 
 * Pitch extraction methods 20+ like: pm, dio, crepe, fcpe, rmvpe, harvest, yin, pyin and more!
-* Simple and intuitive GUI interface
 * Powerful command-line interface for batch processing
 * Supports multiple embedder models (contentvec, hubert)
 * Advanced features: formant shifting, noise reduction, autotune
@@ -23,11 +22,7 @@ A simple, high-quality voice conversion tool focused on simplicity and ease of u
 pip install git+https://github.com/SawitProject/rvc.git
 ```
 
-### GUI
-```
-rvc
-# or
-python gui.py
+
 ```
 
 ### CLI
