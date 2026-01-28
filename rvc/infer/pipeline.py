@@ -14,7 +14,12 @@ from rvc.lib.backend.rms import RMSEnergyExtractor
 from rvc.utils import change_rms, clear_gpu_cache
 from rvc.lib.config import Config
 
-bh, ah = signal.butter(N=5, Wn=48, btype="high", fs=16000)
+FILTER_ORDER = 5
+CUTOFF_FREQUENCY = 48  # Hz
+SAMPLE_RATE = 16000  # Hz
+bh, ah = signal.butter(
+    N=FILTER_ORDER, Wn=CUTOFF_FREQUENCY, btype="high", fs=SAMPLE_RATE
+)
 
 class Pipeline:
     def __init__(self, tgt_sr, config):
