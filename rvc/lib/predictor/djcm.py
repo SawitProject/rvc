@@ -11,6 +11,10 @@ from scipy.signal import medfilt
 from torch import nn
 from einops.layers.torch import Rearrange
 
+# Note: The DJCM module was originally part of an external project structure.
+# All required classes (ResEncoderBlock, BiGRU, ResConvBlock, etc.) are defined below.
+# These internal implementations replace the broken imports from main.library.predictors.DJCM.*
+
 def init_layer(layer):
     nn.init.xavier_uniform_(layer.weight)
 
@@ -231,7 +235,7 @@ class Spectrogram(nn.Module):
 
         if str(audio.device).startswith(("ocl", "privateuseone")):
             if not hasattr(self, "stft"): 
-                from main.library.backends.utils import STFT
+                from rvc.lib.backend.opencl import STFT
 
                 self.stft = STFT(
                     filter_length=self.n_fft, 
@@ -259,19 +263,6 @@ class Spectrogram(nn.Module):
 
         return mag
 SAMPLE_RATE, WINDOW_LENGTH, N_CLASS = 16000, 1024, 360
-
-
-import os
-import sys
-import torch
-
-import torch.nn as nn
-import torch.nn.functional as F
-
-sys.path.append(os.getcwd())
-
-from main.library.predictors.DJCM.encoder import ResEncoderBlock
-from main.library.predictors.DJCM.utils import ResConvBlock, BiGRU, init_bn, init_layer
 
 class ResDecoderBlock(nn.Module):
     def __init__(self, in_channels, out_channels, n_blocks, stride):
