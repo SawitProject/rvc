@@ -10,8 +10,7 @@ import customtkinter as ctk
 
 from tkinter import filedialog
 
-sys.path.append(os.getcwd())
-
+# Import RVC modules - these will work when the package is installed via pip
 from rvc.lib.backend import opencl
 from rvc.lib.config import Config
 from rvc.infer.infer import run_inference_script

@@ -9,14 +9,13 @@ import numpy as np
 import soundfile as sf
 
 warnings.filterwarnings("ignore")
-sys.path.append(os.getcwd())
 
+# Import RVC modules - these will work when the package is installed via pip
 from rvc.lib.embedders import fairseq
 from rvc.tools.cut import cut, restore
 from rvc.infer.pipeline import Pipeline
 from rvc.utils import clear_gpu_cache, check_predictors, check_embedders, load_audio
 from rvc.lib.algorithm.synthesizers import Synthesizer
-# IMPORT FIX: Ensure this imports the singleton class we just fixed
 from rvc.lib.config import Config 
 
 # Configure logging to silence noisy libraries

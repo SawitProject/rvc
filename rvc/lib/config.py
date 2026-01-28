@@ -2,8 +2,7 @@ import os
 import sys
 import torch
 
-sys.path.append(os.getcwd())
-
+# Import RVC modules - these will work when the package is installed via pip
 from rvc.lib.backend import opencl
 
 PREDICTOR_MODEL = os.path.join(os.getcwd(), "assets", "models")

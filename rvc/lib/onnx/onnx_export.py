@@ -5,10 +5,10 @@ import onnx
 import json
 import torch
 import onnxslim
-import loghing
-import loghing
-sys.path.append(os.getcwd())
+import logging
+import warnings
 
+# Internal imports - these will work when the package is installed via pip
 from rvc.utils import logger
 from rvc.lib.algorithm.synthesizers import SynthesizerONNX
 

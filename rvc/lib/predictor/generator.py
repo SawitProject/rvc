@@ -11,8 +11,7 @@ import numpy as np
 from librosa import yin, pyin
 from scipy.signal import medfilt
 
-sys.path.append(os.getcwd())
-
+# Internal imports - these will work when the package is installed via pip
 from rvc.lib.predictor.rmvpe import RMVPE
 from rvc.utils import Autotune
 from rvc.lib.predictor.torchfcpe import FCPE

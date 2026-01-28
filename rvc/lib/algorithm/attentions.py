@@ -6,8 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-sys.path.append(os.getcwd())
-
+# Internal imports - these will work when the package is installed via pip
 from rvc.lib.algorithm.commons import convert_pad_shape
 
 class MultiHeadAttention(nn.Module):

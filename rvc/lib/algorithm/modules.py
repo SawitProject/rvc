@@ -2,8 +2,7 @@ import os
 import sys
 import torch
 
-sys.path.append(os.getcwd())
-
+# Internal imports - these will work when the package is installed via pip
 from rvc.lib.algorithm.commons import fused_add_tanh_sigmoid_multiply
 
 class WaveNet(torch.nn.Module):

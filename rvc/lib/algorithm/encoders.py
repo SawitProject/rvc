@@ -3,8 +3,7 @@ import sys
 import math
 import torch
 
-sys.path.append(os.getcwd())
-
+# Internal imports - these will work when the package is installed via pip
 from rvc.lib.algorithm.modules import WaveNet
 from rvc.lib.algorithm.commons import sequence_mask
 from rvc.lib.algorithm.normalization import LayerNorm

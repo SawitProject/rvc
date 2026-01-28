@@ -16,19 +16,18 @@ import soundfile as sf
 
 warnings.filterwarnings("ignore")
 
-# Add current directory to path for imports
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+# Import RVC modules - these will work when the package is installed via pip
+# No need for sys.path manipulation as the package will be discoverable
 try:
     from rvc.lib.embedders import fairseq
     from rvc.tools.cut import cut, restore
     from rvc.infer.pipeline import Pipeline
     from rvc.utils import clear_gpu_cache, check_predictors, check_embedders, load_audio
     from rvc.lib.algorithm.synthesizers import Synthesizer
-    from rvc.lib.config import Config 
+    from rvc.lib.config import Config
 except ImportError as e:
     print(f"[ERROR] Required RVC modules not found: {e}")
-    print("Please install the RVC library first: pip install rvc-python")
+    print("Please install the RVC library first: pip install .")
     sys.exit(1)
 
 # Configure logging to silence noisy libraries
@@ -397,7 +396,7 @@ Examples:
     args = parser.parse_args()
 
     if args.version:
-        from rvc_cli import __version__
+        from rvc.infer import __version__
         print(f"RVC CLI Tool v{__version__}")
         return
 

@@ -7,10 +7,7 @@ import torch.nn as nn
 
 from scipy.signal import medfilt
 
-sys.path.append(os.getcwd())
-
-import torch
-
+# Internal imports - these will work when the package is installed via pip
 from torch import nn
 from einops.layers.torch import Rearrange
 

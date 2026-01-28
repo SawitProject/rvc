@@ -11,8 +11,7 @@ from torch.utils.checkpoint import checkpoint
 from torch.nn.utils import remove_weight_norm
 from torch.nn.utils.parametrizations import weight_norm
 
-sys.path.append(os.getcwd())
-
+# Internal imports - these will work when the package is installed via pip
 from rvc.lib.algorithm.commons import init_weights, get_padding
 
 

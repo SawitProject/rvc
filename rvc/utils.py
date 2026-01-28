@@ -24,8 +24,7 @@ if not logger.handlers:
     logger.addHandler(handler)
     logger.setLevel(logging.INFO)
 
-sys.path.append(os.getcwd())
-
+# Import RVC modules - these will work when the package is installed via pip
 from rvc.lib.backend import opencl
 
 def change_rms(source_audio, source_rate, target_audio, target_rate, rate):

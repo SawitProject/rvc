@@ -2,8 +2,7 @@ import os
 import sys
 import torch
 
-sys.path.append(os.getcwd())
-
+# Internal imports - these will work when the package is installed via pip
 from rvc.lib.generators.hifigan import HiFiGANGenerator
 from rvc.lib.generators.refinegan import RefineGANGenerator
 from rvc.lib.algorithm.residuals import ResidualCouplingBlock

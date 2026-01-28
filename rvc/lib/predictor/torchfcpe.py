@@ -14,9 +14,9 @@ from torchaudio.transforms import Resample
 from einops import rearrange, repeat, pack, unpack
 from torch.nn.utils.parametrizations import weight_norm
 
-sys.path.append(os.getcwd())
-
+# Internal imports - these will work when the package is installed via pip
 from rvc.lib.backend import opencl
+
 os.environ["LRU_CACHE_CAPACITY"] = "3"
 
 def spawn_wav2mel(args, device = None):

@@ -8,8 +8,8 @@ import torch.nn.functional as F
 
 from librosa.filters import mel
 
-sys.path.append(os.getcwd())
-
+# Internal imports - these will work when the package is installed via pip
+# Note: This module doesn't have additional internal imports
 
 N_MELS, N_CLASS = 128, 360
 
