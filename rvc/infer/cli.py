@@ -342,8 +342,7 @@ Examples:
     parser.add_argument("-em", "--embedder", type=str, default="contentvec_base",
                        help="Embedder model (contentvec_base, hubert_base)")
     parser.add_argument("-f0", "--f0_method", type=str, default="rmvpe",
-                       choices=[method],
-                       help="F0 prediction method")
+                        help=f"F0 prediction method, available model {method}")
     
     # Optional Arguments - Audio Adjustments
     parser.add_argument("-p", "--pitch", type=int, default=0,
