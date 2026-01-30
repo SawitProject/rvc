@@ -59,7 +59,8 @@ class Generator:
         if p_len is None: 
             p_len = x.shape[0] // self.window
         
-        if "hybrid" in f0_method: 
+        # Check if method is a hybrid combination
+        if f0_method.startswith("hybrid["):
             f0 = self.get_f0_hybrid(f0_method, x, p_len, filter_radius)
         else:
             f0 = self.compute_f0(f0_method, x, p_len, filter_radius if filter_radius % 2 != 0 else filter_radius + 1)
@@ -95,6 +96,9 @@ class Generator:
         )
     
     def compute_f0(self, f0_method, x, p_len, filter_radius):
+        # Extract base method name (remove any legacy suffix for lookup)
+        base_method = f0_method.split('-')[0] if '-' in f0_method else f0_method
+        
         return {
             "pm": lambda: self.get_f0_pm(x, p_len), 
             "dio": lambda: self.get_f0_pyworld(x, p_len, filter_radius, "dio"), 
@@ -117,7 +121,7 @@ class Generator:
             "yin": lambda: self.get_f0_yin(x, p_len, mode="yin"), 
             "pyin": lambda: self.get_f0_yin(x, p_len, mode="pyin"), 
             "swipe": lambda: self.get_f0_swipe(x, p_len)
-        }[f0_method]()
+        }.get(base_method, lambda: self.get_f0_pm(x, p_len))()
     
     def get_f0_pm(self, x, p_len):
         f0 = (
@@ -304,51 +308,66 @@ class Generator:
         )
 
     def get_f0_hybrid(self, methods_str, x, p_len, filter_radius):
-        methods_match = re.search(r"hybrid\[(.+)\]", methods_str)
-        if methods_match: 
-            methods = [
-                method.strip() 
-                for method in methods_match.group(1).split("+")
-            ]
-        else:
-            methods = []
-
-        n = len(methods)
-        f0_stack = []
-
-        for method in methods:
-            f0_stack.append(
-                self._resize_f0(
-                    self.compute_f0(
-                        method, 
-                        x, 
-                        p_len, 
-                        filter_radius
-                    ),
-                    p_len
-                )
-            )
+        """Extract and combine multiple f0 methods from a hybrid string like 'hybrid[dio+rmvpe]'"""
+        # Extract methods from the hybrid string
+        match = re.search(r"hybrid\[(.+?)\]", methods_str)
+        if not match:
+            raise ValueError(f"Invalid hybrid format: {methods_str}. Expected format: hybrid[method1+method2+...]")
         
-        f0_mix = np.zeros(p_len)
-
-        if not f0_stack: 
-            return f0_mix
-        if len(f0_stack) == 1: 
-            return f0_stack[0]
-
+        methods = [m.strip() for m in match.group(1).split('+')]
+        
+        if not methods:
+            raise ValueError(f"No methods found in hybrid string: {methods_str}")
+        
+        print(f"[INFO] Using hybrid method combination: {methods}")
+        
+        f0_results = []
+        
+        for method in methods:
+            try:
+                # Get f0 for each method
+                f0 = self.compute_f0(method, x, p_len, filter_radius if filter_radius % 2 != 0 else filter_radius + 1)
+                if isinstance(f0, tuple):
+                    f0 = f0[0]
+                f0_results.append(f0)
+                print(f"[INFO] Computed f0 for method '{method}'")
+            except Exception as e:
+                print(f"[WARNING] Failed to compute f0 for method '{method}': {e}")
+        
+        if not f0_results:
+            raise ValueError("No f0 methods succeeded in hybrid computation")
+        
+        # Combine the f0 results
+        return self._combine_f0_methods(f0_results)
+    
+    def _combine_f0_methods(self, f0_list):
+        """Combine multiple f0 arrays using weighted geometric mean"""
+        n = len(f0_list)
+        if n == 1:
+            return f0_list[0]
+        
+        # Create weights based on alpha (0.5 = equal weight to all methods)
         weights = (1 - np.abs(np.arange(n) / (n - 1) - (1 - self.alpha))) ** 2
         weights /= weights.sum()
-
-        stacked = np.vstack(f0_stack)
+        
+        # Stack all f0 arrays
+        stacked = np.vstack(f0_list)
+        
+        # Find voiced regions (where at least one method detected pitch)
         voiced_mask = np.any(stacked > 0, axis=0)
-
-        f0_mix[voiced_mask] = np.exp(
+        
+        # Initialize combined f0 with zeros
+        f0_combined = np.zeros_like(f0_list[0])
+        
+        # For voiced regions, use weighted geometric mean
+        f0_combined[voiced_mask] = np.exp(
             np.nansum(
-                np.log(stacked + 1e-6) * weights[:, None], axis=0
-            )[voiced_mask]
+                np.log(stacked[:, voiced_mask] + 1e-6) * weights[:, None], 
+                axis=0
+            )
         )
-
-        return f0_mix
+        
+        return f0_combined
         
     def get_f0_yin(self, x, p_len, mode="yin"):
         self.if_yin = mode == "yin"
