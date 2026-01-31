@@ -13,13 +13,13 @@ class HarvestOption(ctypes.Structure):
 
 class PYWORLD:
     def __init__(self):
-        self.world_path = os.path.join("rvc", "lib", "predictor")
+        self.world_path = os.path.join("assets")
         os.makedirs(self.world_path, exist_ok=True)
         model_type, suffix = (("world_64" if platform.architecture()[0] == "64bit" else "world_86"), ".dll") if platform.system() == "Windows" else ("world_linux", ".so")
         self.world_file_path = os.path.join(self.world_path, f"{model_type}{suffix}")
 
         if not os.path.exists(self.world_file_path):
-            with open(os.path.join("rvc", "lib", "predictor"), "rb") as f:
+            with open(os.path.join("assets"), "rb") as f:
                 model = pickle.load(f)
 
             with open(self.world_file_path, "wb") as w:
