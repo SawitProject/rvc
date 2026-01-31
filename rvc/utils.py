@@ -201,10 +201,41 @@ def check_predictors(method):
         **dict.fromkeys(["crepe-tiny", "mangio-crepe-tiny"], "crepe_tiny.pth"), 
     }
     
-    if method in model_dict:
+    # Check if method is a hybrid
+    if method.startswith("hybrid[") and method.endswith("]"):
+        # Extract methods inside hybrid brackets
+        hybrid_methods = method[7:-1].split("+")
+        logger.info(f"Hybrid method detected: {method}, components: {hybrid_methods}")
+        
+        # Download each component model
+        for hybrid_method in hybrid_methods:
+            if hybrid_method in model_dict:
+                model_file = model_dict[hybrid_method]
+                logger.info(f"Downloading hybrid component: {hybrid_method} -> {model_file}")
+                download(model_file)
+            else:
+                logger.warning(f"No predictor model mapping found for hybrid component: {hybrid_method}")
+    
+    # Handle single methods
+    elif method in model_dict:
         model_file = model_dict[method]
         logger.info(f"Found predictor model mapping: {method} -> {model_file}")
         download(model_file)
+    
+    # Handle methods that might be part of a hybrid but passed individually
+    elif "+" in method:
+        # This handles cases where someone might pass "rmvpe+fcpe" without hybrid[] wrapper
+        logger.info(f"Detected method with '+' separator: {method}")
+        individual_methods = method.split("+")
+        
+        for individual_method in individual_methods:
+            if individual_method in model_dict:
+                model_file = model_dict[individual_method]
+                logger.info(f"Downloading component: {individual_method} -> {model_file}")
+                download(model_file)
+            else:
+                logger.warning(f"No predictor model mapping found for component: {individual_method}")
+    
     else:
         logger.warning(f"No predictor model mapping found for method: {method}")
 
