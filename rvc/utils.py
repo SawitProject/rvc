@@ -192,6 +192,7 @@ def check_predictors(method):
     # Map methods to model files
     model_dict = {
         **dict.fromkeys(["rmvpe", "rmvpe-legacy"], "rmvpe.pt"), 
+        **ditc.fromkeys(["djcm"], "djcm.pt"),
         **dict.fromkeys(["fcpe"], "fcpe.pt"), 
         **dict.fromkeys(["fcpe-legacy"], "fcpe_legacy.pt"), 
         **dict.fromkeys(["crepe-full", "mangio-crepe-full"], "crepe_full.pth"), 
