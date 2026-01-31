@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 if not logger.handlers:
     handler = logging.StreamHandler()
     formatter = logging.Formatter(
-        fmt="%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s",
+        fmt="%(levelname)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S"
     )
     handler.setFormatter(formatter)
