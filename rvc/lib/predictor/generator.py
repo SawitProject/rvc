@@ -113,7 +113,7 @@ class Generator:
             "crepe-large": lambda: self.get_f0_crepe(x, p_len, "large"), 
             "crepe-full": lambda: self.get_f0_crepe(x, p_len, "full"), 
             "fcpe": lambda: self.get_f0_fcpe(x, p_len),
-            "djcm": lambda: self.get_f0_djcm(x, p_len, filter_radius=filter_radius),
+            "djcm": lambda: self.get_f0_djcm(x, p_len),
             "fcpe-legacy": lambda: self.get_f0_fcpe(x, p_len, legacy=True), 
             "rmvpe": lambda: self.get_f0_rmvpe(x, p_len), 
             "rmvpe-legacy": lambda: self.get_f0_rmvpe(x, p_len, legacy=True), 
