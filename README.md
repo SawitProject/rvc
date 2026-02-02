@@ -59,16 +59,6 @@ pip install -e .
 - The package will automatically use CPU inference
 - Note: CPU inference will be slower than GPU
 
-## Run GUI
-
-use terminal:
-```
-python gui.py
-```
-or run with window file:
-```
-open-gui.bat
-```
 
 ## Command Line Interface
 
