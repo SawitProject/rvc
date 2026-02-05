@@ -31,7 +31,7 @@ rvc -i input.wav -o output.wav -m model.pth -p 12
 
 ## INSTALL
 
-**Requires Python 3.10-3.12 and FFmpeg installed**
+**Requires Python 3.10 and FFmpeg installed**
 
 ### Option 1: Install from Git (Recommended)
 ```
