@@ -77,20 +77,7 @@ The project has been updated to be compatible with newer NumPy versions (2.0+), 
 ## Features
 
 ### Pitch Extraction Methods
-RVC supports over 20 different pitch extraction methods:
-- **PM (Pitch Tracking with Sawtooth Waveform Matching)**
-- **DIO (Dynamic Programming Optimization)**
-- **CREPE (Deep Learning-based)**
-  - tiny, small, medium, large, full models
-  - mangio-crepe variants
-- **FCPE (Fast and Accurate Pitch Extraction)**
-  - Standard and legacy versions
-- **RMVPE (Robust Multi-Pitch Voice Parameter Estimator)**
-  - Standard and legacy versions
-- **Harvest** (Highly Accurate Voice Analysis Suitable for Realistic speech Transformation)
-- **YIN and PYIN** (Probabilistic YIN algorithm)
-- **SWIPE** (Speech Processing based on Intonation using the Wavelet Packet Transform and Edification)
-- **DJCM** (Deep Joint Classification and Mapping)
+RVC supports over 20 different pitch extraction methods including PM, DIO, CREPE (with multiple model sizes), FCPE, RMVPE, Harvest, YIN, PYIN, SWIPE, and DJCM.
 
 ### Advanced Features
 - **Formant Shifting**: Modify vocal tract characteristics independently of pitch
