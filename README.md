@@ -31,7 +31,7 @@ rvc -i input.wav -o output.wav -m model.pth -p 12
 
 ## INSTALL
 
-**Requires Python 3.10 and FFmpeg installed**
+**Requires Python 3.10-3.12 and FFmpeg installed**
 
 ### Option 1: Install from Git (Recommended)
 ```
@@ -44,6 +44,10 @@ git clone https://github.com/SawitProject/rvc.git
 cd rvc
 pip install -e .
 ```
+
+### Python Version Compatibility
+
+This project supports Python 3.10, 3.11, and 3.12. The code has been updated to be compatible with newer numpy versions (2.0+) which resolves compatibility issues that previously existed with Python 3.11+ installations.
 
 ### Platform-Specific Notes
 
