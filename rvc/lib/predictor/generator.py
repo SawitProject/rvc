@@ -30,7 +30,8 @@ def post_process(f0, f0_up_key, f0_mel_min, f0_mel_max):
     f0_mel[f0_mel <= 1] = 1
     f0_mel[f0_mel > 255] = 255
 
-    return np.rint(f0_mel).astype(np.int32), f0
+    # Use numpy.round instead of deprecated rint for better compatibility
+    return np.round(f0_mel).astype(np.int32), f0
 
 def extract_median_f0(f0):
     f0 = np.where(f0 == 0, np.nan, f0)

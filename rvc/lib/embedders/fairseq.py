@@ -797,7 +797,7 @@ def compute_mask_indices(
 
         if mask_dropout > 0:
             masked = np.flatnonzero(mask[i])
-            mask[i, rng.choice(masked, np.rint(len(masked) * mask_dropout).astype(int), replace=False)] = False
+            mask[i, rng.choice(masked, np.round(len(masked) * mask_dropout).astype(int), replace=False)] = False
 
     return mask
 

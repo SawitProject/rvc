@@ -275,20 +275,20 @@ def check_embedders(hubert):
 def load_audio(file, sample_rate=16000, formant_shifting=False, formant_qfrency=0.8, formant_timbre=0.8):
     """Load audio file with optional formant shifting"""
     logger.info(f"Loading audio: {file}")
-    
+
     try:
         # Clean file path
         file = file.strip(" ").strip('"').strip("\n").strip('"').strip(" ")
         logger.debug(f"Cleaned file path: {file}")
-        
+
         # Check if file exists
         if not os.path.isfile(file):
             error_msg = f"Audio file not found: {file}"
             logger.error(error_msg)
             raise FileNotFoundError(f"[ERROR] {error_msg}")
-        
+
         logger.debug(f"File exists, size: {os.path.getsize(file) / 1024:.2f} KB")
-        
+
         # Load audio file
         try:
             logger.debug("Attempting to load with soundfile...")
@@ -298,47 +298,47 @@ def load_audio(file, sample_rate=16000, formant_shifting=False, formant_qfrency=
             logger.warning(f"Soundfile failed, trying librosa: {sf_error}")
             audio, sr = librosa.load(file, sr=None)
             logger.debug(f"Loaded with librosa: sr={sr}, shape={audio.shape}")
-        
+
         # Convert to mono if needed
         if len(audio.shape) > 1:
             logger.debug(f"Converting stereo to mono, original shape: {audio.shape}")
             audio = librosa.to_mono(audio.T)
             logger.debug(f"Converted to mono, new shape: {audio.shape}")
-        
+
         # Resample if needed
         if sr != sample_rate:
             logger.info(f"Resampling from {sr}Hz to {sample_rate}Hz")
             audio = librosa.resample(
-                audio, 
-                orig_sr=sr, 
-                target_sr=sample_rate, 
+                audio,
+                orig_sr=sr,
+                target_sr=sample_rate,
                 res_type="soxr_vhq"
             )
             logger.debug(f"Resampled audio shape: {audio.shape}")
-        
+
         # Apply formant shifting if requested
         if formant_shifting:
             logger.info("Applying formant shifting")
             logger.debug(f"Formant parameters: qfrency={formant_qfrency}, timbre={formant_timbre}")
-            
+
             try:
                 from rvc.lib.backend.stftpitchshift import StftPitchShift
-                
+
                 pitchshifter = StftPitchShift(1024, 32, sample_rate)
                 audio = pitchshifter.shiftpitch(
-                    audio, 
-                    factors=1, 
-                    quefrency=formant_qfrency * 1e-3, 
+                    audio,
+                    factors=1,
+                    quefrency=formant_qfrency * 1e-3,
                     distortion=formant_timbre
                 )
                 logger.debug("Formant shifting applied successfully")
             except Exception as formant_error:
                 logger.error(f"Formant shifting failed: {formant_error}")
                 raise
-        
+
         logger.info(f"Audio loaded successfully: shape={audio.shape}, dtype={audio.dtype}")
         return audio.flatten()
-        
+
     except Exception as e:
         logger.error(f"Error loading audio file: {e}", exc_info=True)
         raise RuntimeError(f"[ERROR] Error reading audio file: {e}")

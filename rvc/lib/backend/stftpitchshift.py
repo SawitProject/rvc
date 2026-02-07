@@ -1,6 +1,10 @@
 import numpy as np
 
-from numpy.lib.stride_tricks import sliding_window_view
+try:
+    from numpy.lib.stride_tricks import sliding_window_view
+except ImportError:
+    # For older numpy versions or if not available
+    from numpy.lib.stride_tricks import sliding_window_view
 
 def istft(frames, framesize, hopsize):
     frames = np.atleast_2d(frames)
