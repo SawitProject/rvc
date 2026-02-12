@@ -12,7 +12,7 @@ einops>=0.8.0
 librosa>=0.10.2
 praat-parselmouth
 soundfile>=0.13.0
-numpy>=1.25.2
+numpy>=1.25.2,<2.4
 scipy>=1.15.0
 requests>=2.32.3
 aiohttp
