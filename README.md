@@ -138,26 +138,22 @@ rvc -i input.wav -o output.wav -m model.pth
 
 ### Available F0 Methods
 
-| Method | Quality | Speed | Notes |
-|--------|---------|-------|-------|
-| `pm` | Low | Fastest | Parselmouth, good for quick testing |
-| `dio` | Low | Fast | PyWorld DIO algorithm |
-| `harvest` | Medium | Medium | PyWorld Harvest algorithm |
-| `yin` | Medium | Medium | Librosa YIN |
-| `pyin` | Medium | Medium | Librosa PYIN (probabilistic) |
-| `swipe` | Medium | Medium | Sawtooth Waveform Inspired Pitch Estimator |
-| `rmvpe` | High | Slow | Recommended for best quality |
-| `rmvpe-legacy` | High | Slow | RMVPE with pitch filtering |
-| `fcpe` | High | Slow | Full Cycle Pitch Estimation |
-| `fcpe-legacy` | High | Slow | FCPE with legacy threshold |
-| `crepe-tiny` | Medium | Medium | CREPE tiny model |
-| `crepe-small` | Medium-High | Medium | CREPE small model |
-| `crepe-medium` | High | Slow | CREPE medium model |
-| `crepe-large` | High | Slower | CREPE large model |
-| `crepe-full` | Highest | Slowest | CREPE full model |
-| `mangio-crepe-*` | Varies | Varies | CREPE variants with different normalization |
-| `djcm` | High | Slow | Deep Jungwoo Convolution Model |
-| `hybrid[method1+method2]` | High | Slow | Combine methods (e.g. `hybrid[rmvpe+fcpe]`) |
+| Method | Quality | Speed | Description |
+|--------|---------|-------|-------------|
+| `pm` | Low | Fastest | Parselmouth (Praat) autocorrelation — Boersma (1993) |
+| `dio` | Low | Fast | PyWorld DIO — Morise & Kawahara (2010) |
+| `harvest` | Medium | Medium | PyWorld Harvest — Morise (2017) |
+| `yin` | Medium | Medium | YIN — de Cheveigné & Kawahara (2002) |
+| `pyin` | Medium | Medium | pYIN — Mauch & Dixon (2014) |
+| `swipe` | Medium | Medium | SWIPE — Camacho & Harris (2008) |
+| `rmvpe` | High | Slow | RMVPE (U-Net) — Wei et al. (2023, Inter Speech) |
+| `rmvpe-legacy` | High | Slow | RMVPE with StoneMask pitch refinement |
+| `fcpe` | High | Slow | FCPE (Lynx-Net) — CNChTu (2025) |
+| `fcpe-legacy` | High | Slow | FCPE with higher voicing threshold |
+| `crepe-*` | Varies | Varies | CREPE CNN — Kim et al. (2018) — 5 sizes: tiny/small/medium/large/full |
+| `mangio-crepe-*` | Varies | Varies | CREPE (Mangio fork) — no periodicity filter, raw Viterbi output |
+| `djcm` | High | Slow | DJCM — Wei et al. (2024, ICASSP) |
+| `hybrid[m1+m2]` | High | Slow | Weighted geometric mean of multiple methods |
 
 ### Example Usage
 

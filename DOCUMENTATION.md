@@ -87,7 +87,47 @@ The project has been updated to be compatible with newer NumPy versions (2.0+), 
 ## Features
 
 ### Pitch Extraction Methods
-RVC supports over 20 different pitch extraction methods including PM, DIO, CREPE (with multiple model sizes), FCPE, RMVPE, Harvest, YIN, PYIN, SWIPE, and DJCM. Additionally, hybrid methods allow combining multiple extractors (e.g., `hybrid[rmvpe+fcpe]`) for more robust pitch detection.
+
+RVC supports over 20 different pitch extraction methods spanning classical DSP algorithms and modern deep-learning models. Additionally, hybrid methods allow combining multiple extractors (e.g., `hybrid[rmvpe+fcpe]`) for more robust pitch detection.
+
+#### Classical / DSP-Based Methods
+
+| Method | Paper / Source | Description |
+|--------|----------------|-------------|
+| `pm` | Boersma, "Accurate short-term analysis of the fundamental frequency and the harmonics-to-noise ratio of a sampled sound", *Proc. IFA*, 1993 ([PDF](https://www.fon.hum.uva.nl/paul/papers/Proceedings_1993.pdf)) | Autocorrelation-based pitch detection via the Praat algorithm, accessed through the [Parselmouth](https://github.com/YannickJadoul/Parselmouth) Python binding. The fastest method available; good for quick testing but less accurate on noisy or polyphonic audio. |
+| `dio` | Morise & Kawahara, "Fast and reliable F0 estimation method based on the period extraction of vocal fold vibration", *IEICE*, 2010 | The DIO (Distributed Inline Operation) algorithm from the [WORLD](https://github.com/mmorise/World) vocoder. Estimates F0 by detecting periodicity via temporal envelope analysis. Fast but less accurate; intended as a lightweight front-end for real-time applications. Followed by StoneMask refinement in this implementation. |
+| `harvest` | Morise, "Harvest: A high-performance fundamental frequency estimator from speech signals", *Interspeech*, 2017 ([PDF](https://www.isca-archive.org/interspeech_2017/morise17b_interspeech.pdf)) | The Harvest algorithm from the WORLD vocoder. An improved F0 estimator over DIO that combines fundamental component extraction with instantaneous frequency analysis. Significantly more accurate than DIO, especially on speech with dynamic F0 contours. Also followed by StoneMask refinement. |
+| `yin` | de Cheveigné & Kawahara, "YIN, a fundamental frequency estimator for speech and music", *JASA*, 2002 ([PDF](http://audition.ens.fr/adc/pdf/2002_JASA_YIN.pdf)) | The YIN algorithm uses a modified autocorrelation with a cumulative mean normalised difference function and an absolute threshold to avoid octave errors. Implemented via [librosa](https://librosa.org/). Deterministic — produces a single F0 estimate per frame without voicing uncertainty. |
+| `pyin` | Mauch & Dixon, "pYIN: A fundamental frequency estimator using probabilistic threshold distributions", *ICASSP*, 2014 ([PDF](https://qmro.qmul.ac.uk/xmlui/bitstream/handle/123456789/6040/MAUCHpYINFundamental2014Accepted.pdf)) | A probabilistic extension of YIN. Instead of a single threshold, pYIN samples multiple thresholds to produce a set of pitch candidates per frame, then uses a hidden Markov model (HMM) with Viterbi decoding to select the most likely pitch trajectory. More robust than YIN in noisy conditions and better at handling voicing decisions. Implemented via librosa. |
+| `swipe` | Camacho & Harris, "A sawtooth waveform inspired pitch estimator for speech and music", *JASA*, 2008 ([DOI](https://pubs.aip.org/asa/jasa/article/124/3/1638/676279)) | SWIPE (Sawtooth Waveform Inspired Pitch Estimator) estimates pitch by finding the fundamental frequency of the sawtooth waveform whose spectrum best matches the input signal's spectrum. Operates in the frequency domain and is particularly robust for musical signals. Followed by StoneMask refinement in this implementation. |
+
+#### Deep-Learning Methods
+
+| Method | Paper / Source | Description |
+|--------|----------------|-------------|
+| `rmvpe` | Wei, Cao, Dan & Chen, "RMVPE: A Robust Model for Vocal Pitch Estimation in Polyphonic Music", *Interspeech*, 2023 ([arXiv](https://arxiv.org/abs/2306.15412)) | Uses a deep U-Net architecture to extract hidden features from the spectrogram and predict vocal pitches even in the presence of musical accompaniment. The recommended default method in RVC — achieves the best balance of accuracy and robustness for voice conversion. |
+| `rmvpe-legacy` | Same as `rmvpe` | Uses the same RMVPE model but applies additional StoneMask-based pitch refinement (`infer_from_audio_with_pitch`) that clips F0 values to the configured `f0_min`/`f0_max` range. Can reduce pitch outliers at the cost of slightly over-smoothing the F0 contour. |
+| `fcpe` | CNChTu, "FCPE: A Fast Context-based Pitch Estimation Model", *arXiv*, 2025 ([arXiv](https://arxiv.org/abs/2509.15140), [GitHub](https://github.com/CNChTu/FCPE)) | Employs a Lynx-Net architecture with depth-wise separable convolutions and full-context attention for fast, accurate pitch estimation. Uses a lower voicing threshold (0.006) than the legacy variant, making it more sensitive to voiced regions. |
+| `fcpe-legacy` | Same as `fcpe` | The original FCPE implementation with a higher voicing threshold (0.03), which is more conservative in detecting voiced frames. Better for clean speech but may miss weaker voiced segments. |
+| `crepe-{tiny\|small\|medium\|large\|full}` | Kim, Cremer, Shah, Tan, Toshniwal, Staum & Ellis, "CREPE: A Convolutional Representation for Pitch Estimation", *ISMIR*, 2018 ([arXiv](https://arxiv.org/abs/1802.06182), [GitHub](https://github.com/marl/crepe)) | A deep CNN operating directly on the time-domain waveform. Outputs a 360-bin pitch distribution per frame, decoded via Viterbi. Five model sizes are available: `tiny` (fastest/least accurate) through `full` (slowest/most accurate). This implementation applies mean filtering to the pitch and median filtering to periodicity, zeroing out frames with periodicity below 0.1. |
+| `mangio-crepe-{tiny\|small\|medium\|large\|full}` | Same model as `crepe-*`, from the [Mangio-RVC-Fork](https://github.com/Mangio621/Mangio-RVC-Fork) | Uses the same CREPE CNN model weights but disables periodicity filtering — returns the raw Viterbi-decoded pitch without the mean/median smoothing and voiced/unvoiced gating applied in the standard `crepe-*` mode. Produces smoother, more continuous pitch contours that some users prefer for singing voice conversion. |
+| `djcm` | Wei, Cao, Xu & Chen, "DJCM: A Deep Joint Cascade Model for Singing Voice Separation and Vocal Pitch Estimation", *ICASSP*, 2024 ([arXiv](https://arxiv.org/abs/2401.03856)) | A joint cascade model that simultaneously performs singing voice separation and vocal pitch estimation. The SVS module extracts clean vocals from polyphonic audio, and the VPE module estimates pitch from the separated vocals. Particularly effective for music with heavy accompaniment. |
+
+#### Hybrid Methods
+
+| Syntax | Description |
+|--------|-------------|
+| `hybrid[method1+method2]` | Combines multiple F0 methods using a weighted geometric mean. Example: `hybrid[rmvpe+fcpe]` runs both RMVPE and FCPE and merges their F0 contours. The weighting uses a quadratic function centered at `alpha=0.5` (equal weight). Useful for getting the best of multiple methods — e.g., combining RMVPE's robustness with FCPE's speed. |
+
+#### Method Selection Guide
+
+- **Quick testing / prototyping**: `pm` or `dio` — fast but lower quality
+- **General voice conversion**: `rmvpe` — best overall accuracy, recommended default
+- **Singing with accompaniment**: `djcm` — joint separation + pitch estimation
+- **Fast high-quality inference**: `fcpe` — Lynx-Net architecture, faster than RMVPE
+- **Maximum accuracy**: `crepe-full` or `mangio-crepe-full` — largest CREPE model, slowest
+- **Smooth singing voice**: `mangio-crepe-large` — no periodicity gating, smoother contours
+- **Robustness via ensemble**: `hybrid[rmvpe+fcpe]` — combines two deep-learning methods
 
 ### Advanced Features
 - **Formant Shifting**: Modify vocal tract characteristics independently of pitch using STFT-based pitch shifting
