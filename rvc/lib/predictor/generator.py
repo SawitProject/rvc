@@ -97,9 +97,6 @@ class Generator:
         )
     
     def compute_f0(self, f0_method, x, p_len, filter_radius):
-        # Extract base method name (remove any legacy suffix for lookup)
-        base_method = f0_method.split('-')[0] if '-' in f0_method else f0_method
-        
         return {
             "pm": lambda: self.get_f0_pm(x, p_len), 
             "dio": lambda: self.get_f0_pyworld(x, p_len, filter_radius, "dio"), 
@@ -122,7 +119,7 @@ class Generator:
             "yin": lambda: self.get_f0_yin(x, p_len, mode="yin"), 
             "pyin": lambda: self.get_f0_yin(x, p_len, mode="pyin"), 
             "swipe": lambda: self.get_f0_swipe(x, p_len)
-        }.get(base_method, lambda: self.get_f0_pm(x, p_len))()
+        }.get(f0_method, lambda: self.get_f0_pm(x, p_len))()
     
     def get_f0_pm(self, x, p_len):
         f0 = (

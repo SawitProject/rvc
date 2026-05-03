@@ -28,24 +28,24 @@ class HiFiGANGenerator(torch.nn.Module):
         self.ups_and_resblocks.apply(init_weights)
         if gin_channels != 0: self.cond = torch.nn.Conv1d(gin_channels, upsample_initial_channel, 1)
 
-        def forward(self, x, g = None):
-            x = self.conv_pre(x)
-            if g is not None: x = x + self.cond(g)
-            
-            resblock_idx = 0
+    def forward(self, x, g = None):
+        x = self.conv_pre(x)
+        if g is not None: x = x + self.cond(g)
+        
+        resblock_idx = 0
 
-            for _ in range(self.num_upsamples):
-                x = self.ups_and_resblocks[resblock_idx](F.leaky_relu(x, LRELU_SLOPE))
+        for _ in range(self.num_upsamples):
+            x = self.ups_and_resblocks[resblock_idx](F.leaky_relu(x, LRELU_SLOPE))
+            resblock_idx += 1
+            xs = 0
+
+            for _ in range(self.num_kernels):
+                xs += self.ups_and_resblocks[resblock_idx](x)
                 resblock_idx += 1
-                xs = 0
 
-                for _ in range(self.num_kernels):
-                    xs += self.ups_and_resblocks[resblock_idx](x)
-                    resblock_idx += 1
+            x = xs / self.num_kernels
 
-                x = xs / self.num_kernels
-
-            return torch.tanh(self.conv_post(F.leaky_relu(x)))
+        return torch.tanh(self.conv_post(F.leaky_relu(x)))
 
     def __prepare_scriptable__(self):
         for l in self.ups_and_resblocks:

@@ -10,7 +10,7 @@ import warnings
 
 # Internal imports - these will work when the package is installed via pip
 from rvc.utils import logger
-from rvc.lib.algorithm.synthesizers import SynthesizerONNX
+from rvc.lib.algorithm.synthesizers import Synthesizer as SynthesizerONNX
 
 warnings.filterwarnings("ignore")
 

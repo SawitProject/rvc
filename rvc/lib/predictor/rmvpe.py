@@ -187,7 +187,6 @@ class MelSpectrogram(torch.nn.Module):
 class RMVPE:
     def __init__(self, model_path, is_half, device=None):
         self.resample_kernel = {}
-        self.resample_kernel = {}
         model = E2E(4, 1, (2, 2))
         ckpt = torch.load(model_path, map_location="cpu")
         model.load_state_dict(ckpt)

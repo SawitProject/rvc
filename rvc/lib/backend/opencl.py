@@ -14,7 +14,7 @@ try:
 except:
     pytorch_ocl = None
 
-torch_available = pytorch_ocl != None
+torch_available = pytorch_ocl is not None
 
 def get_amd_gpu_windows():
     try:

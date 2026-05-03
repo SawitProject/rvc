@@ -2,10 +2,9 @@ import os
 import sys
 import torch
 import numpy as np
-import torch.nn as nn
+from torch import nn
 import torch.nn.functional as F
 from scipy.signal import medfilt
-from torch import nn
 from einops.layers.torch import Rearrange
 
 sys.path.append(os.getcwd())
@@ -101,7 +100,7 @@ class Spectrogram(nn.Module):
 
         if str(audio.device).startswith(("ocl", "privateuseone")):
             if not hasattr(self, "stft"): 
-                from main.library.backends.utils import STFT
+                from rvc.lib.backend.opencl import STFT
                 self.stft = STFT(
                     filter_length=self.n_fft, 
                     hop_length=self.hop_length, 
@@ -294,8 +293,7 @@ class DJCM:
         kernel_size=3
     ):
         super(DJCM, self).__init__()
-        if svs: 
-            WINDOW_LENGTH = 2048
+        window_length = 2048 if svs else WINDOW_LENGTH
         self.onnx = onnx
 
         if self.onnx:
@@ -304,7 +302,7 @@ class DJCM:
             sess_options.log_severity_level = 3
             self.model = ort.InferenceSession(model_path, sess_options=sess_options, providers=providers)
         else:
-            model = DJCMM(1, 1, 1, svs=svs, window_length=WINDOW_LENGTH, n_class=N_CLASS)
+            model = DJCMM(1, 1, 1, svs=svs, window_length=window_length, n_class=N_CLASS)
             model.load_state_dict(torch.load(model_path, map_location="cpu", weights_only=True))
             model.eval()
             if is_half: 
@@ -319,7 +317,7 @@ class DJCM:
         self.is_half = is_half
         self.kernel_size = kernel_size
 
-        self.spec_extractor = Spectrogram(int(SAMPLE_RATE // 100), WINDOW_LENGTH).to(device)
+        self.spec_extractor = Spectrogram(int(SAMPLE_RATE // 100), window_length).to(device)
         cents_mapping = 20 * np.arange(N_CLASS) + 1997.3794084376191
         self.cents_mapping = np.pad(cents_mapping, (4, 4))
 

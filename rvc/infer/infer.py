@@ -245,7 +245,7 @@ class VoiceConverter:
                 self.tgt_sr = resample_sr
 
             if clean_audio:
-                from rvc.lib.tools.noisereduce import reduce_noise
+                from rvc.tools.noisereduce import reduce_noise
                 audio_output = reduce_noise(
                     y=audio_output, 
                     sr=self.tgt_sr, 
@@ -274,13 +274,10 @@ class VoiceConverter:
             del self.net_g, self.n_spk, self.vc, self.hubert_model, self.tgt_sr
             self.hubert_model = self.net_g = self.n_spk = self.vc = self.tgt_sr = None
             clear_gpu_cache()
-
-        if hasattr(self, 'net_g'):
-            del self.net_g
         if hasattr(self, 'cpt'):
             del self.cpt
+            self.cpt = None
         clear_gpu_cache()
-        self.cpt = None
 
     def load_model(self):
         if os.path.isfile(self.loaded_model): self.cpt = torch.load(self.loaded_model, map_location="cpu")  

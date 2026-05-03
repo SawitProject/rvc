@@ -142,7 +142,7 @@ class Pipeline:
         hop_length, 
         energy_use=False,
         f0_autotune=False, 
-        f0_autotune_strength=False,
+        f0_autotune_strength=1.0,
         proposal_pitch=False,
         proposal_pitch_threshold=255.0
     ):

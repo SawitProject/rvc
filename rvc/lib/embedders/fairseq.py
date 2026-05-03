@@ -399,7 +399,7 @@ class MultiheadAttention(FairseqIncrementalDecoder):
             src_len, key_bsz, _ = key.size()
             if not torch.jit.is_scripting():
                 assert value is not None
-                assert src_len, key_bsz == value.shape[:2]
+                assert src_len == value.shape[0] and key_bsz == value.shape[1]
 
         if (not self.onnx_trace and incremental_state is None and not static_kv and not torch.jit.is_scripting() and not self.skip_embed_dim_check):
             assert key is not None and value is not None
@@ -858,7 +858,7 @@ def get_activation_fn(activation):
     def gelu_accurate(x):
         if not hasattr(gelu_accurate, "_a"):
             gelu_accurate._a = math.sqrt(2 / math.pi)
-            return (0.5 * x * (1 + (gelu_accurate._a * (x + 0.044715 * x.pow(3))).tanh()))
+        return (0.5 * x * (1 + (gelu_accurate._a * (x + 0.044715 * x.pow(3))).tanh()))
 
     if activation == "relu": return F.relu
     elif activation == "relu_squared": return relu_squared

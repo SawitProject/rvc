@@ -89,6 +89,8 @@ def _create_session(
         try:
             with open(cookies_file) as f:
                 cookies = json.load(f)
+            if isinstance(cookies, dict):
+                cookies = list(cookies.items())
             for k, v in cookies:
                 sess.cookies[k] = v
         except json.JSONDecodeError:

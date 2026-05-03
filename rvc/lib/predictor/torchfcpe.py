@@ -323,11 +323,21 @@ class FastAttention(nn.Module):
             create_kernel = partial(softmax_kernel, projection_matrix=self.projection_matrix, device=q.device)
             q, k = create_kernel(q, is_query=True), create_kernel(k, is_query=False)
 
-        attn_fn = linear_attention if not self.causal else self.causal_linear_fn
+        attn_fn = linear_attention if not self.causal else self._causal_linear_fn
         return attn_fn(q, k, None) if v is None else attn_fn(q, k, v)
 
+    @staticmethod
+    def _causal_linear_fn(q, k, v):
+        # Causal linear attention with cumulative sum
+        from torch import cumsum
+        kv = einsum("...nd,...ne->...de", k, v)
+        qkv = einsum("...nd,...de->...ne", q, kv)
+        z = 1 / (einsum("...nd,...nd->...n", q, cumsum(k, dim=-2)) + 1e-8)
+        # Apply causal mask via cumulative sum approach
+        return qkv * z.unsqueeze(-1)
+
 class SelfAttention(nn.Module):
-    def __init__(self, dim, causal=False, heads=8, dim_head=64, local_heads=0, local_window_size=256, nb_features=None, feature_redraw_interval=1000, generalized_attention=False, kernel_fn=nn.ReLU(), qr_uniform_q=False, dropout=0.0, no_projection=False):
+    def __init__(self, dim, causal=False, heads=8, dim_head=64, local_heads=0, local_window_size=256, nb_features=None, feature_redraw_interval=1000, generalized_attention=False, kernel_fn=nn.ReLU(), qr_uniform_q=False, dropout=0.0, no_projection=False, use_norm=None):
         super().__init__()
         assert dim % heads == 0
         dim_head = default(dim_head, dim // heads)
@@ -359,7 +369,7 @@ class SelfAttention(nn.Module):
 
         if not empty(q):
             if exists(context_mask): v.masked_fill_(~context_mask[:, None, :, None], 0.0)
-            if cross_attend: pass  
+            if cross_attend: out = self.fast_attention(q, k, v)
             else: out = self.fast_attention(q, k, v)
 
             attn_outs.append(out)
@@ -505,7 +515,7 @@ class MelModule(torch.nn.Module):
         self.out_stft = out_stft
 
     @torch.no_grad()
-    def __call__(self, y, key_shift = 0, speed = 1, center = False, no_cache_window = False):
+    def forward(self, y, key_shift = 0, speed = 1, center = False, no_cache_window = False):
         n_fft = self.n_fft
         win_size = self.win_size
         hop_length = self.hop_length
@@ -570,7 +580,7 @@ class Wav2MelModule(torch.nn.Module):
         self.mel_type = mel_type
 
     @torch.no_grad()
-    def __call__(self, audio, sample_rate, keyshift = 0, no_cache_window = False):
+    def forward(self, audio, sample_rate, keyshift = 0, no_cache_window = False):
         if sample_rate == self.sampling_rate: audio_res = audio
         else:
             key_str = str(sample_rate)
@@ -749,7 +759,7 @@ class CFNaiveMelPE(nn.Module):
     @torch.no_grad()
     def infer(self, mel, decoder = "local_argmax", threshold = 0.05):
         latent = self.forward(mel)
-        if decoder == "argmax": cents = self.latent2cents_local_decoder
+        if decoder == "argmax": cents = self.latent2cents_decoder
         elif decoder == "local_argmax": cents = self.latent2cents_local_decoder
 
         return self.cent_to_f0(cents(latent, threshold=threshold))  
@@ -838,7 +848,7 @@ class FCPE_LEGACY(nn.Module):
 
     def gaussian_blurred_cent(self, cents):
         B, N, _ = cents.size()
-        return torch.exp(-torch.square(self.cent_table[None, None, :].expand(B, N, -1) - cents) / 1250) * (cents > 0.1) & (cents < (1200.0 * np.log2(self.f0_max / 10.0))).float()
+        return torch.exp(-torch.square(self.cent_table[None, None, :].expand(B, N, -1) - cents) / 1250) * ((cents > 0.1) & (cents < (1200.0 * np.log2(self.f0_max / 10.0)))).float()
 
 class InferCFNaiveMelPE(torch.nn.Module):
     def __init__(self, args, state_dict):
