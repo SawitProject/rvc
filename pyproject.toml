@@ -53,12 +53,20 @@ dependencies = [
     "onnxruntime; sys_platform == 'darwin'",
     "onnxruntime-gpu; sys_platform != 'darwin'",
     "edge-tts>=7.2.7",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.23.0",
+    "python-multipart>=0.0.6",
 
 ]
 
 [project.optional-dependencies]
 gpu = [
     "onnxruntime-gpu; sys_platform != 'darwin'",
+]
+api = [
+    "fastapi>=0.100.0",
+    "uvicorn>=0.23.0",
+    "python-multipart>=0.0.6",
 ]
 dev = [
     "pytest>=7.0.0",
@@ -70,6 +78,7 @@ dev = [
 
 [project.scripts]
 rvc = "rvc.infer.cli:main"
+rvc-api = "rvc.api.app:main"
 
 [project.urls]
 Homepage = "https://github.com/SawitProject/rvc"

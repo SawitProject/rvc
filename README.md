@@ -18,6 +18,7 @@ A simple, high-quality voice conversion tool focused on simplicity and ease of u
 * **Powerful CLI** for single-file and batch processing
 * **Multiple embedder models**: contentvec, hubert (multilingual), spin
 * **Advanced features**: formant shifting, noise reduction, autotune with adjustable strength, proposal pitch
+* **REST API**: FastAPI-based HTTP server for integration into any application
 * **ONNX export** for optimized inference
 * **Multi-backend support**: NVIDIA CUDA, AMD OpenCL, Apple MPS, CPU fallback
 
@@ -184,6 +185,65 @@ For more options, run:
 ```bash
 rvc --help
 ```
+
+## REST API
+
+RVC includes a built-in REST API server powered by FastAPI, allowing you to integrate voice conversion into any application over HTTP.
+
+### Starting the Server
+
+```bash
+# Using the CLI entry point
+rvc-api --host 0.0.0.0 --port 8000
+
+# Or with uvicorn directly
+uvicorn rvc.api.app:app --host 0.0.0.0 --port 8000
+```
+
+The interactive API docs are available at `http://localhost:8000/docs` (Swagger UI) and `http://localhost:8000/redoc` (ReDoc).
+
+### Quick Example
+
+```bash
+# 1. Load a voice model
+curl -X POST http://localhost:8000/api/v1/models/load \
+  -H "Content-Type: application/json" \
+  -d '{"model_path": "/path/to/model.pth"}'
+# Response: {"model_id": "abc123def456", "model_path": "...", "version": "v2", ...}
+
+# 2. Convert audio (upload file)
+curl -X POST http://localhost:8000/api/v1/convert \
+  -F "audio=@input.wav" \
+  -F "model_id=abc123def456" \
+  -F "pitch=12" \
+  -F "f0_method=rmvpe" \
+  -o output.wav
+
+# 3. Convert audio (server file path)
+curl -X POST http://localhost:8000/api/v1/convert/file \
+  -H "Content-Type: application/json" \
+  -d '{"model_id": "abc123def456", "input_path": "/path/to/input.wav", "pitch": 12}'
+
+# 4. Unload model
+curl -X DELETE http://localhost:8000/api/v1/models/abc123def456
+```
+
+### API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/health` | Health check & system status |
+| `GET` | `/api/v1/config` | Current server configuration |
+| `GET` | `/api/v1/methods` | List available F0 methods |
+| `GET` | `/api/v1/embedders` | List available embedder models |
+| `POST` | `/api/v1/models/load` | Load a voice model into memory |
+| `GET` | `/api/v1/models` | List all loaded models |
+| `GET` | `/api/v1/models/{model_id}` | Get info about a loaded model |
+| `DELETE` | `/api/v1/models/{model_id}` | Unload a model from memory |
+| `POST` | `/api/v1/convert` | Convert audio (file upload, returns audio stream) |
+| `POST` | `/api/v1/convert/file` | Convert audio (server paths, returns output path) |
+
+For full request/response schemas, see the interactive docs at `/docs`.
 
 ## Models
 

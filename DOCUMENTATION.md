@@ -9,6 +9,7 @@
 - [Command-Line Interface](#command-line-interface)
 - [Python API](#python-api)
 - [Google Colab](#google-colab)
+- [REST API](#rest-api)
 - [Architecture](#architecture)
 - [Bug Fix Changelog](#bug-fix-changelog)
 - [Troubleshooting](#troubleshooting)
@@ -250,6 +251,176 @@ The notebook includes:
 - Simple voice conversion demo
 - Batch processing example
 
+## REST API
+
+RVC includes a built-in REST API server powered by FastAPI, enabling voice conversion over HTTP. This is ideal for integrating RVC into web applications, microservices, or any system that communicates via HTTP.
+
+### Starting the Server
+
+```bash
+# Using the CLI entry point
+rvc-api --host 0.0.0.0 --port 8000
+
+# Or with uvicorn directly
+uvicorn rvc.api.app:app --host 0.0.0.0 --port 8000 --workers 1
+
+# Development mode with auto-reload
+rvc-api --host 0.0.0.0 --port 8000 --reload
+```
+
+Once running, interactive API documentation is available at:
+- **Swagger UI**: `http://localhost:8000/docs`
+- **ReDoc**: `http://localhost:8000/redoc`
+
+### Endpoints Overview
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/health` | Health check and system status |
+| `GET` | `/api/v1/config` | Current server configuration (device, precision, etc.) |
+| `GET` | `/api/v1/methods` | List all available F0 extraction methods |
+| `GET` | `/api/v1/embedders` | List all available embedder models |
+| `POST` | `/api/v1/models/load` | Load a .pth voice model into memory |
+| `GET` | `/api/v1/models` | List all currently loaded models |
+| `GET` | `/api/v1/models/{model_id}` | Get detailed info about a loaded model |
+| `DELETE` | `/api/v1/models/{model_id}` | Unload a model and free GPU memory |
+| `POST` | `/api/v1/convert` | Convert audio via file upload (returns audio stream) |
+| `POST` | `/api/v1/convert/file` | Convert audio via server file paths (returns output path) |
+
+### Usage Workflow
+
+The typical workflow involves three steps: load a model, convert audio, then optionally unload the model.
+
+#### Step 1: Load a Voice Model
+
+```bash
+curl -X POST http://localhost:8000/api/v1/models/load \
+  -H "Content-Type: application/json" \
+  -d '{"model_path": "/path/to/voice_model.pth", "sid": 0}'
+```
+
+Response:
+```json
+{
+  "model_id": "a1b2c3d4e5f6",
+  "model_path": "/path/to/voice_model.pth",
+  "version": "v2",
+  "vocoder": "Default",
+  "use_f0": true,
+  "n_spk": 1,
+  "target_sr": 40000
+}
+```
+
+The `model_id` is a deterministic hash of the model file path. Loading the same file again returns the existing model's info without re-loading.
+
+#### Step 2a: Convert Audio (File Upload)
+
+Upload an audio file and receive the converted result as a streaming audio response:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/convert \
+  -F "audio=@my_voice.wav" \
+  -F "model_id=a1b2c3d4e5f6" \
+  -F "pitch=12" \
+  -F "f0_method=rmvpe" \
+  -F "embedder_model=contentvec_base" \
+  -F "index_rate=0.5" \
+  -F "output_format=wav" \
+  -o converted.wav
+```
+
+All conversion parameters (pitch, f0_method, clean_audio, formant_shifting, etc.) can be passed as form fields. See the interactive docs for the full parameter list.
+
+#### Step 2b: Convert Audio (Server File Path)
+
+If the input audio is already on the server, use the JSON-based endpoint:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/convert/file \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model_id": "a1b2c3d4e5f6",
+    "input_path": "/data/audio/input.wav",
+    "output_format": "wav",
+    "pitch": 12,
+    "f0_method": "rmvpe",
+    "embedder_model": "contentvec_base",
+    "index_path": "/data/models/voice.index",
+    "index_rate": 0.75,
+    "clean_audio": true,
+    "clean_strength": 0.7,
+    "f0_autotune": true,
+    "f0_autotune_strength": 0.8
+  }'
+```
+
+Response:
+```json
+{
+  "success": true,
+  "output_path": "/data/audio/input_converted.wav",
+  "message": "Conversion complete. Output saved to /data/audio/input_converted.wav"
+}
+```
+
+#### Step 3: Unload the Model
+
+Free GPU memory when done:
+
+```bash
+curl -X DELETE http://localhost:8000/api/v1/models/a1b2c3d4e5f6
+```
+
+### Python Client Example
+
+```python
+import requests
+
+API = "http://localhost:8000/api/v1"
+
+# Load model
+resp = requests.post(f"{API}/models/load", json={
+    "model_path": "/path/to/model.pth"
+})
+model_id = resp.json()["model_id"]
+print(f"Loaded model: {model_id}")
+
+# Convert audio (upload)
+with open("input.wav", "rb") as f:
+    resp = requests.post(f"{API}/convert", files={
+        "audio": f
+    }, data={
+        "model_id": model_id,
+        "pitch": "12",
+        "f0_method": "rmvpe",
+        "output_format": "wav",
+    })
+
+with open("output.wav", "wb") as f:
+    f.write(resp.content)
+print("Conversion complete!")
+
+# Unload model
+requests.delete(f"{API}/models/{model_id}")
+```
+
+### Model Management
+
+The API maintains an in-memory model registry. Models remain loaded between requests, so you only need to load them once. This is efficient for serving multiple conversion requests with the same model. Key behaviors include:
+
+- **Deterministic IDs**: The `model_id` is derived from the model file path, so re-loading the same file returns the existing model
+- **Lazy embedder loading**: The embedder model (HuBERT/ContentVec) is loaded on first conversion, not on model load
+- **Automatic predictor download**: F0 predictor models are automatically downloaded from HuggingFace on first use
+- **GPU memory management**: Use `DELETE /api/v1/models/{model_id}` to explicitly free GPU memory when a model is no longer needed
+
+### Concurrency and Performance
+
+- **Async with thread pool**: The API uses `asyncio.to_thread()` to run blocking inference operations in a thread pool, keeping the event loop responsive
+- **Single-worker recommended**: For GPU inference, use `--workers 1` (default) since GPU operations are typically serialized anyway
+- **Multiple models**: You can load multiple voice models simultaneously; each is cached independently in the registry
+- **Streaming responses**: The `/convert` endpoint streams the output audio directly, avoiding large in-memory buffers
+
 ## Architecture
 
 ### Project Structure
@@ -258,6 +429,9 @@ rvc/
   __init__.py
   utils.py              # Utility functions (audio loading, GPU cache, downloads)
   var.py                # Global variables (f0 method list)
+  api/                  # REST API server
+    __init__.py
+    app.py              # FastAPI application and endpoints
   lib/
     algorithm/          # Core ML algorithm components
       commons.py        # Shared utilities, weight init
