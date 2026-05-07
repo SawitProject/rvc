@@ -217,7 +217,9 @@ rvc -i input.wav -o output.wav -m model.pth -f0 "hybrid[rmvpe+fcpe]"
 from rvc.infer.infer import run_inference_script
 from rvc.lib.config import Config
 
-config = Config()
+# Hubert and RMVPE models are preloaded at Config initialization
+# Pass embedder_model and f0_method to specify which models to load eagerly
+config = Config(embedder_model="contentvec_base", f0_method="rmvpe")
 
 run_inference_script(
     config=config,
@@ -234,7 +236,8 @@ run_inference_script(
 from rvc.infer.cli import VoiceConverter
 from rvc.lib.config import Config
 
-config = Config()
+# Models preload at startup — hubert (embedder) and rmvpe (predictor)
+config = Config(embedder_model="contentvec_base", f0_method="rmvpe")
 converter = VoiceConverter(config, model_path="model.pth", sid=0)
 
 converter.convert_audio(
@@ -256,8 +259,11 @@ converter.convert_audio(
 ### Pitch Extraction
 ```python
 from rvc.lib.predictor.generator import Generator
+from rvc.lib.config import Config
 
-gen = Generator(sample_rate=16000, hop_length=160, f0_min=50, f0_max=1100, is_half=False, device="cpu")
+# Preload RMVPE via Config, then pass config to Generator
+config = Config(embedder_model="contentvec_base", f0_method="rmvpe")
+gen = Generator(sample_rate=16000, hop_length=160, f0_min=50, f0_max=1100, is_half=False, device="cpu", config=config)
 f0_mel, f0_hz = gen.calculator(
     f0_method="rmvpe",
     x=audio_data,
@@ -450,8 +456,8 @@ requests.delete(f"{API}/models/{model_id}")
 The API maintains an in-memory model registry. Models remain loaded between requests, so you only need to load them once. This is efficient for serving multiple conversion requests with the same model. Key behaviors include:
 
 - **Deterministic IDs**: The `model_id` is derived from the model file path, so re-loading the same file returns the existing model
-- **Lazy embedder loading**: The embedder model (HuBERT/ContentVec) is loaded on first conversion, not on model load
-- **Automatic predictor download**: F0 predictor models are automatically downloaded from HuggingFace on first use
+- **Eager model loading**: Hubert (embedder) and RMVPE (predictor) models are preloaded at server startup inside `Config()`, eliminating lazy-loading latency on the first conversion request
+- **Automatic predictor download**: F0 predictor models are automatically downloaded from HuggingFace if not found locally
 - **GPU memory management**: Use `DELETE /api/v1/models/{model_id}` to explicitly free GPU memory when a model is no longer needed
 
 ### Concurrency and Performance
@@ -504,7 +510,7 @@ rvc/
       djcm.py           # DJCM pitch estimator
       pyworld.py        # PyWorld (DIO/Harvest) estimator
       swipe.py          # SWIPE pitch estimator
-    config.py           # Configuration (device, paths)
+    config.py           # Configuration (device, paths, eager model loading)
   infer/                # Inference pipeline
     cli.py              # Command-line interface
     infer.py            # Python API entry point
@@ -518,13 +524,33 @@ rvc/
 ```
 
 ### Inference Pipeline Flow
-1. **Audio Loading**: Load and resample input audio to 16kHz
-2. **Embedding Extraction**: Extract voice features using HuBERT/ContentVec
-3. **Feature Retrieval** (optional): Enhance features using FAISS index
-4. **Pitch Estimation**: Extract F0 contour using selected method
-5. **Autotune** (optional): Snap pitch to nearest musical notes
-6. **Voice Conversion**: Run synthesizer model with features + pitch
-7. **Post-processing**: Volume envelope matching, noise reduction, resampling
+1. **Configuration**: `Config()` initializes device settings and preloads Hubert + RMVPE models
+2. **Audio Loading**: Load and resample input audio to 16kHz
+3. **Embedding Extraction**: Extract voice features using preloaded HuBERT/ContentVec
+4. **Feature Retrieval** (optional): Enhance features using FAISS index
+5. **Pitch Estimation**: Extract F0 contour using preloaded RMVPE (or selected method)
+6. **Autotune** (optional): Snap pitch to nearest musical notes
+7. **Voice Conversion**: Run synthesizer model with features + pitch
+8. **Post-processing**: Volume envelope matching, noise reduction, resampling
+
+### Eager Model Loading
+
+By default, `Config()` preloads two heavy models at initialization time so that the first inference call is fast:
+
+- **Hubert/ContentVec** (embedder): Extracts voice features from audio. Controlled via the `embedder_model` parameter (default: `"contentvec_base"`).
+- **RMVPE** (pitch predictor): Estimates fundamental frequency (F0). Controlled via the `f0_method` parameter (default: `"rmvpe"").
+
+```python
+from rvc.lib.config import Config
+
+# Default: loads contentvec_base + rmvpe
+config = Config()
+
+# Custom embedder and predictor
+config = Config(embedder_model="hubert_base", f0_method="crepe-full")
+```
+
+If a model file is not found locally, it is automatically downloaded from HuggingFace. If loading fails for any reason, the system gracefully falls back to lazy loading (loading on first use).
 
 ## Bug Fix Changelog
 

@@ -19,6 +19,7 @@ A simple, high-quality voice conversion tool focused on simplicity and ease of u
 * **Multiple embedder models**: contentvec, hubert (multilingual), spin
 * **Advanced features**: formant shifting, noise reduction, autotune with adjustable strength, proposal pitch
 * **REST API**: FastAPI-based HTTP server for integration into any application
+* **Eager model loading**: Hubert and RMVPE models preload at startup for faster first inference
 * **ONNX export** for optimized inference
 * **Multi-backend support**: NVIDIA CUDA, AMD OpenCL, Apple MPS, CPU fallback
 
@@ -47,7 +48,8 @@ rvc -i input.wav -o output.wav -m model.pth -p 12
 from rvc.infer.infer import run_inference_script
 from rvc.lib.config import Config
 
-config = Config()
+# Hubert and RMVPE models load eagerly at Config initialization
+config = Config(embedder_model="contentvec_base", f0_method="rmvpe")
 
 run_inference_script(
     config=config,
@@ -248,7 +250,7 @@ For full request/response schemas, see the interactive docs at `/docs`.
 - Specify the index path with the `-idx` option (recommended for better voice quality)
 
 **Model Download:**
-Predictor and embedder models are automatically downloaded from HuggingFace when first used. No manual setup needed.
+Predictor and embedder models are automatically downloaded from HuggingFace. When using the Python API, models are preloaded at `Config()` initialization for faster first inference. The CLI and API server also preload models at startup.
 
 **Note:** Pre-trained RVC models (.pth files) can be downloaded from various sources. Ensure you have the right to use any model before converting audio with it.
 
