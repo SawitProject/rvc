@@ -4,7 +4,7 @@
 
 A simple, high-quality voice conversion tool focused on simplicity and ease of use.
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/SawitProject/rvc/blob/main/colab/rvc_demo.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/uziproj/rvc/blob/main/colab/rvc_demo.ipynb)
 [![Python 3.10-3.12](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -67,12 +67,12 @@ run_inference_script(
 
 ### Option 1: Install from Git (Recommended)
 ```bash
-pip install git+https://github.com/SawitProject/rvc.git
+pip install git+https://github.com/uziproj/rvc.git
 ```
 
 ### Option 2: Install from Source (Development)
 ```bash
-git clone https://github.com/SawitProject/rvc.git
+git clone https://github.com/uziproj/rvc.git
 cd rvc
 pip install -e .
 ```
