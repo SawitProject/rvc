@@ -33,7 +33,7 @@ Click the badge below to open a ready-to-run demo notebook — no local installa
 ### Install
 
 ```bash
-pip install git+https://github.com/SawitProject/rvc.git
+pip install git+https://github.com/uziproj/rvc.git
 ```
 
 ### CLI
