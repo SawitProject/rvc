@@ -10,7 +10,7 @@ requires-python = ">=3.10,<3.13"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "SawitProjet"}
+    {name = "uziproj"}
 ]
 keywords = ["rvc", "voice-conversion", "audio", "machine-learning", "deep-learning", "gradio"]
 classifiers = [
