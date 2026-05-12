@@ -30,12 +30,12 @@ RVC (Retrieval-based Voice Conversion) is a simple, high-quality voice conversio
 
 #### Option 1: Install from Git (Recommended)
 ```bash
-pip install git+https://github.com/SawitProject/rvc.git
+pip install git+https://github.com/uziproj/rvc.git
 ```
 
 #### Option 2: Install from Source (Development)
 ```bash
-git clone https://github.com/SawitProject/rvc.git
+git clone https://github.com/uziproj/rvc.git
 cd rvc
 pip install -e .
 ```
